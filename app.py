@@ -37,7 +37,7 @@ scores_df = load_data("Sheet1", ["Timestamp", "User_ID", "Name", "Group_Code", "
 questions_df = load_data("Questions", ["ID", "Question", "Option_A", "Option_B", "Option_C", "Option_D", "Correct_Option"])
 
 # --- 🎯 ACTION: PASTE YOUR COPIED WHATSAPP COMMUNITY LINK HERE 🎯 ---
-GLOBAL_COMMUNITY_URL = "https://chat.whatsapp.com/I3ajCTSGOgo2UZpH5GnY2x"
+GLOBAL_COMMUNITY_URL = "https://chat.whatsapp.com/I3ajCTSGOgo2UZpH5GnY2x        "
 
 # --- ONBOARDING ENGINE ---
 if "user_authenticated" not in st.session_state:
@@ -60,10 +60,13 @@ if not st.session_state.user_authenticated:
             if user_input_name.strip():
                 new_group_code = f"G-{random.randint(1000, 9999)}"
                 st.session_state.my_name = user_input_name
-                if user_input_name.strip().lower() == "yourname": # Replace with your real name
-                st.session_state.my_uid = "UID-16728"
-                 else:
-               st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+                
+                # Check if this is the Master Admin logging in
+                if user_input_name.strip().lower() == "admin":
+                    st.session_state.my_uid = "UID-16728"
+                else:
+                    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+                    
                 st.session_state.my_group = new_group_code
                 st.session_state.user_authenticated = True
                 
@@ -85,7 +88,13 @@ if not st.session_state.user_authenticated:
         if st.button("Connect to Group", key="join_group_btn"):
             if user_input_name.strip() and input_code.strip():
                 st.session_state.my_name = user_input_name
-                st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+                
+                # Check if this is the Master Admin logging in
+                if user_input_name.strip().lower() == "admin":
+                    st.session_state.my_uid = "UID-16728"
+                else:
+                    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+                    
                 st.session_state.my_group = input_code.strip().upper()
                 st.session_state.user_authenticated = True
                 st.rerun()
@@ -98,7 +107,13 @@ if not st.session_state.user_authenticated:
         if st.button("Launch Solo Mode", key="solo_btn"):
             if user_input_name.strip():
                 st.session_state.my_name = user_input_name
-                st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+                
+                # Check if this is the Master Admin logging in
+                if user_input_name.strip().lower() == "admin":
+                    st.session_state.my_uid = "UID-16728"
+                else:
+                    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+                    
                 st.session_state.my_group = "SOLO"
                 st.session_state.user_authenticated = True
                 st.rerun()
@@ -121,16 +136,13 @@ st.sidebar.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_blank" style="ba
 
 # --- 🛠️ SECURE CONTENT ADMIN DRAWER PANEL 🛠️ ---
 st.sidebar.markdown("---")
-# Step 1: Only show the panel if the user's ID matches your Admin ID
 if st.session_state.my_uid == "UID-16728":
     with st.sidebar.expander("🛠️ Admin Controls (Add Questions)"):
         st.caption("Secure Portal: Enter your passkey to modify questions.")
-        
-        # Step 2: Password protection entry field
         admin_password = st.text_input("Admin Password:", type="password", key="admin_pwd_field")
         
         if admin_password == "Gaikokujin":
-            st.success("Access Granted Unlock")
+            st.success("Access Granted")
             with st.form("admin_question_form", clear_on_submit=True):
                 new_q_text = st.text_area("Question Text:")
                 col_a, col_b = st.columns(2)
@@ -165,7 +177,7 @@ if st.session_state.my_uid == "UID-16728":
                     else:
                         st.error("Fields cannot be left blank!")
         elif admin_password != "":
-            st.error("Incorrect Password Access Denied")
+            st.error("Incorrect Password")
 
 # --- PRIMARY DISPLAY ROUTER ---
 tab1, tab2 = st.tabs(["🏆 Arena Scoreboard", "⚔️ Active Quiz"])
@@ -185,7 +197,7 @@ with tab1:
         
         if not group_df.empty:
             group_df["Correct"] = pd.to_numeric(group_df["Correct"])
-            leaderboard = group_df.groupby(["User_ID", "Name"]).agg(
+                       leaderboard = group_df.groupby(["User_ID", "Name"]).agg(
                 Total_Correct=("Correct", "sum"),
                 Total_Incorrect=("Incorrect", "sum")
             ).reset_index().sort_values(by="Total_Correct", ascending=False)
@@ -272,4 +284,3 @@ with tab2:
                 conn.update(worksheet="Sheet1", data=pd.concat([scores_df, new_score], ignore_index=True))
                 del st.session_state.q_index
                 st.rerun()
-
