@@ -197,7 +197,7 @@ with tab1:
         
         if not group_df.empty:
             group_df["Correct"] = pd.to_numeric(group_df["Correct"])
-                       leaderboard = group_df.groupby(["User_ID", "Name"]).agg(
+            leaderboard = group_df.groupby(["User_ID", "Name"]).agg(
                 Total_Correct=("Correct", "sum"),
                 Total_Incorrect=("Incorrect", "sum")
             ).reset_index().sort_values(by="Total_Correct", ascending=False)
