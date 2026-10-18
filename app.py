@@ -61,10 +61,9 @@ if not st.session_state.user_authenticated:
                 new_group_code = f"G-{random.randint(1000, 9999)}"
                 st.session_state.my_name = user_input_name
                 if user_input_name.strip().lower() == "yourname": # Replace with your real name
-    st.session_state.my_uid = "UID-16728"
-else:
-    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
-
+                st.session_state.my_uid = "UID-16728"
+                 else:
+               st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
                 st.session_state.my_group = new_group_code
                 st.session_state.user_authenticated = True
                 
