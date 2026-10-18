@@ -2,96 +2,89 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import datetime
-import random
 
-# --- NATIVE MOBILE APP THEMING ---
-st.set_page_config(page_title="Nihongo Arena", page_icon="🥷", layout="centered")
+# --- PAGE SETUP ---
+st.set_page_config(page_title="Nihongo Challenge Hub", page_icon="🇯🇵", layout="centered")
 
-# Advanced CSS injection to completely override the default "Form" look
+# Native mobile app layout styling
 st.markdown("""
     <style>
-    /* Force mobile native app sizing */
-    .main .block-container { max-width: 480px; padding-top: 1rem; background-color: #0f0f12; }
-    body { background-color: #0f0f12; color: #ffffff; }
-    
-    /* Global Card styling */
-    .chat-card { padding: 14px; border-radius: 16px; background: #1a1a24; border-left: 6px solid #8a2be2; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .aura-badge { padding: 3px 9px; border-radius: 20px; font-weight: bold; background: linear-gradient(45deg, #ff007f, #7f00ff); color: white; font-size: 11px; float: right;}
-    .gacha-card { padding: 25px; border-radius: 24px; background: linear-gradient(145deg, #1e1e2f, #11111a); border: 2px solid #ffd700; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    
-    /* Beautiful Trivia UI components */
-    .question-box { background: #1e1e2e; padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #2d2d44; text-align: center; }
-    
-    /* Make all Streamlit buttons look like large native mobile action tiles */
+    .main .block-container { max-width: 480px; padding-top: 1rem; }
+    .chat-card { padding: 12px; border-radius: 12px; background-color: #f1f2f6; margin-bottom: 8px; border-left: 5px solid #2ed573; }
+    .question-box { background: #f8f9fa; padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #ced4da; text-align: center; }
     div.stButton > button { 
         width: 100% !important; 
-        background: linear-gradient(135deg, #6c5ce7, #a29bfe) !important; 
+        background: #2ed573 !important; 
         color: white !important; 
-        font-weight: 700 !important; 
-        padding: 14px !important; 
-        border-radius: 14px !important; 
+        font-weight: bold !important; 
+        padding: 12px !important; 
+        border-radius: 10px !important; 
         border: none !important;
-        transition: transform 0.1s ease;
     }
-    div.stButton > button:active { transform: scale(0.97); }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🥷 Nihongo Guild Arena")
+st.title("🇯🇵 Nihongo Challenge Hub")
 
-# --- DATA CONNECTIONS ---
+# --- DATABASE CONNECTION ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data(sheet_name, fallback_cols):
     try: return conn.read(worksheet=sheet_name, ttl="0m")
     except: return pd.DataFrame(columns=fallback_cols)
 
-scores_df = load_data("Sheet1", ["Timestamp", "Name", "Topic", "Correct", "Incorrect", "Aura_Earned"])
+scores_df = load_data("Sheet1", ["Timestamp", "User_ID", "Name", "Topic", "Correct", "Incorrect"])
 questions_df = load_data("Questions", ["ID", "Question", "Option_A", "Option_B", "Option_C", "Option_D", "Correct_Option"])
-chat_df = load_data("Chat", ["Timestamp", "User", "Message", "Aura_Bonus"])
+chat_df = load_data("Chat", ["Timestamp", "User", "Message"])
 
-if not scores_df.empty:
-    scores_df["Correct"] = pd.to_numeric(scores_df["Correct"]).fillna(0)
-    scores_df["Incorrect"] = pd.to_numeric(scores_df["Incorrect"]).fillna(0)
+# Map users to permanent Tracking IDs
+USER_IDS = {
+    "Alex": "UID-001",
+    "Jordan": "UID-002",
+    "Taylor": "UID-003",
+    "Sam": "UID-004",
+    "Morgan": "UID-005",
+    "Jamie": "UID-006"
+}
 
-# Global Session Identity
-current_user = st.sidebar.selectbox("🎯 Active Warrior:", ["Alex", "Jordan", "Taylor", "Sam", "Morgan", "Jamie"])
+# --- GLOBAL USER SELECTOR ---
+current_user = st.sidebar.selectbox("🎯 Select Your Name:", list(USER_IDS.keys()))
+current_id = USER_IDS[current_user]
+st.sidebar.info(f"Tracking ID: **{current_id}**")
 
-tab1, tab2, tab3, tab4 = st.tabs(["🏆 Leaderboard", "⚔️ Live Arena", "💬 Comms", "⛩️ Fortune"])
+tab1, tab2, tab3 = st.tabs(["🏆 Scoreboard & Logs", "⚔️ Take Quiz", "💬 Group Chat"])
 
-# --- TAB 1: SCREEN RANKINGS ---
+# --- TAB 1: SCOREBOARD & DETAILED ANSWER LOGS ---
 with tab1:
-    st.subheader("👑 Guild Hierarchy")
-    all_users = ["Alex", "Jordan", "Taylor", "Sam", "Morgan", "Jamie"]
-    base_stats = []
+    st.subheader("📊 Group Standings")
     
-    for u in all_users:
-        u_scores = scores_df[scores_df["Name"] == u] if not scores_df.empty else pd.DataFrame()
-        u_chats = chat_df[chat_df["User"] == u] if not chat_df.empty else pd.DataFrame()
+    if not scores_df.empty and len(scores_df) > 0:
+        scores_df["Correct"] = pd.to_numeric(scores_df["Correct"]).fillna(0)
+        scores_df["Incorrect"] = pd.to_numeric(scores_df["Incorrect"]).fillna(0)
         
-        correct = u_scores["Correct"].sum() if not u_scores.empty else 0
-        incorrect = u_scores["Incorrect"].sum() if not u_scores.empty else 0
-        quiz_aura = (correct * 50) - (incorrect * 20)
-        chat_aura = len(u_chats) * 10
-        total_aura = 1000 + quiz_aura + chat_aura
+        # Aggregate totals per user
+        leaderboard = scores_df.groupby(["User_ID", "Name"]).agg(
+            Total_Correct=("Correct", "sum"),
+            Total_Incorrect=("Incorrect", "sum")
+        ).reset_index()
         
-        if total_aura > 1200: tier = "👑 Shogun"
-        elif total_aura > 1050: tier = "⚔️ Samurai"
-        elif total_aura >= 1000: tier = "🌾 Ronin"
-        else: tier = "🤡 Gaki"
-            
-        base_stats.append({"Warrior": u, "Aura Level": total_aura, "Rank": tier})
+        leaderboard = leaderboard.sort_values(by="Total_Correct", ascending=False)
+        st.dataframe(leaderboard, use_container_width=True, hide_index=True)
         
-    st.dataframe(pd.DataFrame(base_stats).sort_values(by="Aura Level", ascending=False), use_container_width=True, hide_index=True)
+        # Transparent Review Feed: Look closely at everyone's answer breakdowns
+        st.subheader("👀 All Attempt History")
+        st.dataframe(scores_df, use_container_width=True, hide_index=True)
+    else:
+        st.info("No quiz submissions found yet.")
 
-# --- TAB 2: MOBILIZED GAMEPLAY (NO FORM CIRCLES!) ---
+# --- TAB 2: INTERACTIVE ONE-BY-ONE QUIZ ---
 with tab2:
-    st.subheader("⚔️ Active Challenge Tile")
+    st.subheader("📝 Live Challenge")
     
     if questions_df.empty:
-        st.info("The arena scrolls are empty! Fill your Questions tab.")
+        st.warning("Please add questions to your Google Sheet 'Questions' tab first!")
     else:
-        # Track which question the user is on inside temporary state memory
+        # Initialize quiz tracker session states
         if "q_index" not in st.session_state:
             st.session_state.q_index = 0
             st.session_state.temp_correct = 0
@@ -102,15 +95,14 @@ with tab2:
         if q_idx < len(questions_df):
             row = questions_df.iloc[q_idx]
             
-            # Custom styled layout card for the query block
             st.markdown(f"""
             <div class="question-box">
-                <span style="color:#8a2be2; font-weight:bold; font-size:14px;">QUESTION {q_idx + 1} OF {len(questions_df)}</span>
-                <h3 style="margin-top:5px; color:white;">{row['Question']}</h3>
+                <span style="color: #2ed573; font-weight: bold;">QUESTION {q_idx + 1} OF {len(questions_df)}</span>
+                <h3>{row['Question']}</h3>
             </div>
             """, unsafe_allow_html=True)
             
-            # Render choices as clean, square mobile tiles (2x2 layout matrix)
+            # 2x2 Layout matrix for instant button tapping
             col1, col2 = st.columns(2)
             with col1:
                 ans_A = st.button(f"A) {row['Option_A']}", key=f"btn_A_{q_idx}")
@@ -119,7 +111,6 @@ with tab2:
                 ans_B = st.button(f"B) {row['Option_B']}", key=f"btn_B_{q_idx}")
                 ans_D = st.button(f"D) {row['Option_D']}", key=f"btn_D_{q_idx}")
                 
-            # Evaluation engine when any block tile is pressed
             choice_made = None
             if ans_A: choice_made = "A"
             if ans_B: choice_made = "B"
@@ -130,83 +121,56 @@ with tab2:
                 correct_letter = str(row['Correct_Option']).strip().upper()
                 if choice_made == correct_letter:
                     st.session_state.temp_correct += 1
-                    st.toast("🎯 Direct Hit! Correct.", icon="✅")
+                    st.toast("Correct!", icon="✅")
                 else:
                     st.session_state.temp_incorrect += 1
-                    st.toast(f"💥 Deflected! Correct answer was {correct_letter}.", icon="❌")
+                    st.toast(f"Wrong! Answer was {correct_letter}", icon="❌")
                 
-                # Advance layout matrix instantly to next question
                 st.session_state.q_index += 1
                 st.rerun()
         else:
-            # End of quiz assessment screen
-            st.balloons()
-            st.markdown("<div class='question-box'><h3>🏆 Arena Match Finished!</h3></div>", unsafe_allow_html=True)
-            st.write(f"🟢 **Answers Right:** {st.session_state.temp_correct}")
-            st.write(f"🔴 **Answers Missed:** {st.session_state.temp_incorrect}")
+            st.success("🏁 Challenge completed!")
+            st.write(f"✅ Correct Answers: **{st.session_state.temp_correct}**")
+            st.write(f"❌ Incorrect Answers: **{st.session_state.temp_incorrect}**")
             
-            if st.button("Save & Submit Results to Ledger"):
-                net_aura = (st.session_state.temp_correct * 50) - (st.session_state.temp_incorrect * 20)
+            if st.button("Submit My Score to Group"):
                 new_score = pd.DataFrame([{
                     "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "User_ID": current_id,
                     "Name": current_user,
-                    "Topic": "Speed Arena Run",
+                    "Topic": "Japanese Basics Quiz",
                     "Correct": int(st.session_state.temp_correct),
-                    "Incorrect": int(st.session_state.temp_incorrect),
-                    "Aura_Earned": int(net_aura)
+                    "Incorrect": int(st.session_state.temp_incorrect)
                 }])
+                
                 conn.update(worksheet="Sheet1", data=pd.concat([scores_df, new_score], ignore_index=True))
                 
-                # Wipe temporary runtime variables clean for next pass
+                # Reset local quiz metrics
                 del st.session_state.q_index
-                st.success("Ledger Sync Complete!")
+                st.success("Results broadcasted to the scoreboard log!")
                 st.rerun()
 
-# --- TAB 3: LIVE PERSISTENT WIRE FEED ---
+# --- TAB 3: CLEAN GROUP CHAT ---
 with tab3:
-    st.subheader("💬 Guild Comms Wire")
+    st.subheader("💬 Group Chat")
+    
     with st.form("chat_box", clear_on_submit=True):
-        msg_text = st.text_input("Broadcast to crew:", placeholder="Talk trash or share study insights...")
+        msg_text = st.text_input("Message the group:", placeholder="Type a chat...")
         if st.form_submit_button("Send"):
             if msg_text.strip():
                 new_msg = pd.DataFrame([{
                     "Timestamp": datetime.datetime.now().strftime("%H:%M"),
-                    "User": current_user,
-                    "Message": msg_text,
-                    "Aura_Bonus": 10
+                    "User": f"{current_user} ({current_id})",
+                    "Message": msg_text
                 }])
                 conn.update(worksheet="Chat", data=pd.concat([chat_df, new_msg], ignore_index=True))
                 st.rerun()
 
     if not chat_df.empty:
-        for _, post in chat_df.iloc[::-1].head(10).iterrows():
+        for _, post in chat_df.iloc[::-1].head(15).iterrows():
             st.markdown(f"""
             <div class="chat-card">
-                <span class="aura-badge">+10 Aura</span>
-                <strong>🥷 {post['User']}</strong> <span style='font-size:11px; color:#aaa; margin-left:8px;'>{post['Timestamp']}</span>
-                <p style='margin-top:6px; margin-bottom:0px;'>{post['Message']}</p>
+                <strong>{post['User']}</strong> <span style='font-size:11px; color:#777; float:right;'>{post['Timestamp']}</span>
+                <p style='margin-top:4px; margin-bottom:0px;'>{post['Message']}</p>
             </div>
             """, unsafe_allow_html=True)
-
-# --- TAB 4: LUCKY FORTUNE GENERATION ---
-with tab4:
-    st.subheader("⛩️ The Omikuji Shrine")
-    if st.button("🔮 Pull Random Fortune Card"):
-        fortunes = [
-            {"luck": "✨ Great Luck", "p": 100, "d": "Flawless pronunciation of 'Mondai nai desu'. +100 Aura!"},
-            {"luck": "💀 Bad Luck", "p": -50, "d": "Used 'arimasu' for a breathing cat. Structural fail. -50 Aura!"}
-        ]
-        rolled = random.choice(fortunes)
-        st.markdown(f"""
-        <div class="gacha-card">
-            <h2>{rolled['luck']}</h2>
-            <p>"{rolled['d']}"</p>
-            <h3 style='color:#6c5ce7;'>Aura: {rolled['p']}</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        gacha_log = pd.DataFrame([{
-            "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "Name": current_user, "Topic": f"Omikuji: {rolled['luck']}", "Correct": 0, "Incorrect": 0, "Aura_Earned": int(rolled['p'])
-        }])
-        conn.update(worksheet="Sheet1", data=pd.concat([scores_df, gacha_log], ignore_index=True))
