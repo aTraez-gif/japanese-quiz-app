@@ -28,8 +28,10 @@ st.title("🇯🇵 Nihongo Guild Network")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data(sheet_name, fallback_cols):
-    try: return conn.read(worksheet=sheet_name, ttl="0m")
-    except: return pd.DataFrame(columns=fallback_cols)
+    try:
+        return conn.read(worksheet=sheet_name, ttl="0m")
+    except:
+        return pd.DataFrame(columns=fallback_cols)
 
 scores_df = load_data("Sheet1", ["Timestamp", "User_ID", "Name", "Group_Code", "Topic", "Correct", "Incorrect"])
 questions_df = load_data("Questions", ["ID", "Question", "Option_A", "Option_B", "Option_C", "Option_D", "Correct_Option"])
@@ -133,7 +135,6 @@ with st.sidebar.expander("🛠️ Admin Controls (Add Questions)"):
         
         if admin_submit:
             if new_q_text.strip() and opt_a.strip() and opt_b.strip():
-                # Determine Next ID scalar value
                 next_id = int(questions_df["ID"].max() + 1) if not questions_df.empty else 1
                 
                 new_q_row = pd.DataFrame([{
@@ -201,54 +202,3 @@ with tab2:
             
             st.markdown(f"""
             <div class="question-box">
-            QUESTION {q_idx + 1} OF {len(questions_df)}
-{row['Question']}
-
-""", unsafe_allow_html=True)
-col1, col2 = st.columns(2)
-with col1:
-ans_A = st.button(f"A) {row['Option_A']}", key=f"btn_A_{q_idx}")
-ans_C = st.button(f"C) {row['Option_C']}", key=f"btn_C_{q_idx}")
-with col2:
-ans_B = st.button(f"B) {row['Option_B']}", key=f"btn_B_{q_idx}")
-ans_D = st.button(f"D) {row['Option_D']}", key=f"btn_D_{q_idx}")
-choice_made = None
-if ans_A: choice_made = "A"
-if ans_B: choice_made = "B"
-if ans_C: choice_made = "C"
-if ans_D: choice_made = "D"
-if choice_made:
-correct_letter = str(row['Correct_Option']).strip().upper()
-if choice_made == correct_letter:
-st.session_state.temp_correct += 1
-st.toast("Correct!", icon="✅")
-else:
-st.session_state.temp_incorrect += 1
-st.toast(f"Deflected! Correct was {correct_letter}", icon="❌")
-st.session_state.q_index += 1
-st.rerun()
-# Direct Question Discussion Redirect Link Engine
-wa_chat_text = (
-f"❓ Question Debate! (Room: {st.session_state.my_group})\n"
-f"From user: {st.session_state.my_name}\n\n"
-f"Question: "{row['Question']}"\n\n"
-f"What answer option do you guys think is correct? Let's check!"
-)
-st.markdown(f'💬 Discuss Question on WhatsApp', unsafe_allow_html=True)
-else:
-st.success("🏁 Challenge Completed!")
-st.write(f"✅ Total Correct: {st.session_state.temp_correct}")
-st.write(f"❌ Total Incorrect: {st.session_state.temp_incorrect}")
-if st.button("Broadcast My Score to Ledger"):
-new_score = pd.DataFrame([{
-"Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-"User_ID": st.session_state.my_uid,
-"Name": st.session_state.my_name,
-"Group_Code": st.session_state.my_group,
-"Topic": "Mixed Japanese Evaluation",
-"Correct": int(st.session_state.temp_correct),
-"Incorrect": int(st.session_state.temp_incorrect)
-}])
-conn.update(worksheet="Sheet1", data=pd.concat([scores_df, new_score], ignore_index=True))
-del st.session_state.q_index
-st.rerun()
