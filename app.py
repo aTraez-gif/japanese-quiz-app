@@ -60,7 +60,11 @@ if not st.session_state.user_authenticated:
             if user_input_name.strip():
                 new_group_code = f"G-{random.randint(1000, 9999)}"
                 st.session_state.my_name = user_input_name
-                st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+                if user_input_name.strip().lower() == "yourname": # Replace with your real name
+    st.session_state.my_uid = "UID-16728"
+else:
+    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
+
                 st.session_state.my_group = new_group_code
                 st.session_state.user_authenticated = True
                 
@@ -118,41 +122,51 @@ st.sidebar.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_blank" style="ba
 
 # --- 🛠️ SECURE CONTENT ADMIN DRAWER PANEL 🛠️ ---
 st.sidebar.markdown("---")
-with st.sidebar.expander("🛠️ Admin Controls (Add Questions)"):
-    st.caption("Inject a question straight into the core live Google Sheet registry.")
-    with st.form("admin_question_form", clear_on_submit=True):
-        new_q_text = st.text_area("Question Text:")
-        col_a, col_b = st.columns(2)
-        with col_a:
-            opt_a = st.text_input("Option A:")
-            opt_c = st.text_input("Option C:")
-        with col_b:
-            opt_b = st.text_input("Option B:")
-            opt_d = st.text_input("Option D:")
+# Step 1: Only show the panel if the user's ID matches your Admin ID
+if st.session_state.my_uid == "UID-16728":
+    with st.sidebar.expander("🛠️ Admin Controls (Add Questions)"):
+        st.caption("Secure Portal: Enter your passkey to modify questions.")
         
-        correct_ans = st.selectbox("Correct Option Key:", ["A", "B", "C", "D"])
-        admin_submit = st.form_submit_button("Publish Question Live")
+        # Step 2: Password protection entry field
+        admin_password = st.text_input("Admin Password:", type="password", key="admin_pwd_field")
         
-        if admin_submit:
-            if new_q_text.strip() and opt_a.strip() and opt_b.strip():
-                next_id = int(questions_df["ID"].max() + 1) if not questions_df.empty else 1
+        if admin_password == "Gaikokujin":
+            st.success("Access Granted Unlock")
+            with st.form("admin_question_form", clear_on_submit=True):
+                new_q_text = st.text_area("Question Text:")
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    opt_a = st.text_input("Option A:")
+                    opt_c = st.text_input("Option C:")
+                with col_b:
+                    opt_b = st.text_input("Option B:")
+                    opt_d = st.text_input("Option D:")
                 
-                new_q_row = pd.DataFrame([{
-                    "ID": int(next_id),
-                    "Question": new_q_text.strip(),
-                    "Option_A": opt_a.strip(),
-                    "Option_B": opt_b.strip(),
-                    "Option_C": opt_c.strip(),
-                    "Option_D": opt_d.strip(),
-                    "Correct_Option": correct_ans
-                }])
+                correct_ans = st.selectbox("Correct Option Key:", ["A", "B", "C", "D"])
+                admin_submit = st.form_submit_button("Publish Question Live")
                 
-                updated_questions = pd.concat([questions_df, new_q_row], ignore_index=True)
-                conn.update(worksheet="Questions", data=updated_questions)
-                st.success(f"Success! Question #{next_id} added.")
-                st.rerun()
-            else:
-                st.error("Fields cannot be left blank!")
+                if admin_submit:
+                    if new_q_text.strip() and opt_a.strip() and opt_b.strip():
+                        next_id = int(questions_df["ID"].max() + 1) if not questions_df.empty else 1
+                        
+                        new_q_row = pd.DataFrame([{
+                            "ID": int(next_id),
+                            "Question": new_q_text.strip(),
+                            "Option_A": opt_a.strip(),
+                            "Option_B": opt_b.strip(),
+                            "Option_C": opt_c.strip(),
+                            "Option_D": opt_d.strip(),
+                            "Correct_Option": correct_ans
+                        }])
+                        
+                        updated_questions = pd.concat([questions_df, new_q_row], ignore_index=True)
+                        conn.update(worksheet="Questions", data=updated_questions)
+                        st.success(f"Success! Question #{next_id} added.")
+                        st.rerun()
+                    else:
+                        st.error("Fields cannot be left blank!")
+        elif admin_password != "":
+            st.error("Incorrect Password Access Denied")
 
 # --- PRIMARY DISPLAY ROUTER ---
 tab1, tab2 = st.tabs(["🏆 Arena Scoreboard", "⚔️ Active Quiz"])
