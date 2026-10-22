@@ -299,12 +299,12 @@ if st.button("Save & Upload Results to Ledger Scoreboard"):
 # --- 🛠️ SECURE ACTION FORMS BACKEND PUSH VIA REQUESTS DICT ---
 # ACTION: Update the 'entry.XXXXX' labels below with your actual form pre-fill IDs!
 form_payload = {
-"entry.11111111": st.session_state.my_uid,
-"entry.22222222": st.session_state.my_name,
-"entry.33333333": st.session_state.my_group,
-"entry.44444444": "Dynamic Automation Set",
-"entry.55555555": int(st.session_state.run_correct),
-"entry.66666666": int(st.session_state.run_incorrect)
+"entry.1525120234": st.session_state.my_uid,
+"entry.878138925": st.session_state.my_name,
+"entry.1966520722": st.session_state.my_group,
+"entry.1225860610": "Dynamic Automation Set",
+"entry.1612230484": int(st.session_state.run_correct),
+"entry.277055382": int(st.session_state.run_incorrect)
 }
 try:
 requests.post(GOOGLE_FORM_URL, data=form_payload)
