@@ -61,8 +61,10 @@ DATA_FILE = "local_scores_ledger.csv"
 
 def get_scores_data():
     if os.path.exists(DATA_FILE):
-        try: return pd.read_csv(DATA_FILE)
-        except: pass
+        try:
+            return pd.read_csv(DATA_FILE)
+        except:
+            pass
     return pd.DataFrame(columns=["Timestamp", "User_ID", "Name", "Group_Code", "Topic", "Correct", "Incorrect"])
 
 def save_score_locally(uid, name, group, correct, incorrect):
@@ -91,7 +93,6 @@ def get_automated_question_bank():
             "meaning": "No problem / There is no issue.",
             "desc": "'Mondai' translates to problem or question, and 'nai' means there isn't any. Use it casually to assure someone that a plan, task, or condition is safely under control.",
             "example": "A: 'Asu no kaigi, ma ni au?' (Meeting tomorrow, will you make it?) \nB: 'Mondai nai desu!' (No problem!)",
-            "q_type": "meaning",
             "options": ["Excuse me", "No problem", "Goodbye", "I don't understand"],
             "correct": "B"
         },
@@ -100,7 +101,6 @@ def get_automated_question_bank():
             "meaning": "There is / To have (Inanimate Objects).",
             "desc": "Used strictly for non-living items like places, buildings, plants, or concepts. It states existence or personal possession.",
             "example": "Kuruma ga arimasu. (I have a car / There is a car.)",
-            "q_type": "grammar",
             "options": ["People only", "Animals only", "Inanimate objects", "Moving things"],
             "correct": "C"
         },
@@ -109,7 +109,6 @@ def get_automated_question_bank():
             "meaning": "There is not / Do not have (Inanimate Objects).",
             "desc": "The polite negative form of 'arimasu'. It denotes that a non-living object is missing or not owned.",
             "example": "Jikan ga arimasen. (I do not have time.)",
-            "q_type": "meaning",
             "options": ["I will go", "I don't have / there is none", "Please wait", "Thank you"],
             "correct": "B"
         },
@@ -118,7 +117,6 @@ def get_automated_question_bank():
             "meaning": "To go.",
             "desc": "An active motion verb indicating movement away from your current position toward a physical destination.",
             "example": "Gakkou e ikimasu. (I am going to school.)",
-            "q_type": "meaning",
             "options": ["To eat", "To go", "To speak", "To sleep"],
             "correct": "B"
         },
@@ -127,7 +125,6 @@ def get_automated_question_bank():
             "meaning": "Will not go / Do not go.",
             "desc": "The polite negative expression of 'ikimasu'. Used to declare you aren't journeying to a specific location.",
             "example": "Doko mo ikimasen. (I am not going anywhere.)",
-            "q_type": "grammar",
             "options": ["I went yesterday", "I want to go", "I am going", "I will not go"],
             "correct": "D"
         }
@@ -139,10 +136,7 @@ def get_automated_question_bank():
             scen = random.choice(scenarios)
             item = base.copy()
             item["ID"] = len(extended_bank) + 1
-            if item["q_type"] == "meaning":
-                item["Question"] = f"When evaluating a setup scheduled {scen}, what does '{item['word']}' indicate?"
-            else:
-                item["Question"] = f"Identify the structural rule requirement for using '{item['word']}' safely {scen}."
+            item["Question"] = f"When evaluating a setup scheduled {scen}, what is the correct alignment for '{item['word']}'?"
             extended_bank.append(item)
     return extended_bank
 
@@ -176,11 +170,10 @@ if not st.session_state.user_authenticated:
                 
                 invite_msg = (
                     f"🇯🇵 *Join my private Japanese Learning Arena!* 🥷\n\n"
-                    f"Open the app link, choose 'Join Existing Group', and enter our code:\n"
+                    f"Open our app link, choose 'Join Existing Group', and enter our code:\n"
                     f"👉 *Group Code:* {new_group_code}"
                 )
                 st.session_state.invite_url = f"https://wa.me{urllib.parse.quote(invite_msg)}"
-                st.info(f"📩 Registration locked in for: {user_input_email}")
                 st.rerun()
             else:
                 st.error("Please fill in both fields correctly (include '@' in your email)!")
@@ -382,7 +375,7 @@ with tab2:
                 st.session_state.show_explanation = False
                 st.rerun()
                 
-        # Unblocked, completely fixed deep linking parameter matrix
+        # Deep linking formatting fix for seamless WhatsApp routing
         peer_challenge_msg = (
             f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\n"
             f"From player: {st.session_state.my_name} (Room: {st.session_state.my_group})\n\n"
@@ -405,7 +398,7 @@ with tab2:
                 st.session_state.run_correct, 
                 st.session_state.run_incorrect
             )
-            st.success("Scores synced safely into local ledger storage file!")
+            st.success("Scores synced safely into local repository ledger storage file!")
             del st.session_state.quiz_index
             del st.session_state.run_correct
             del st.session_state.run_incorrect
