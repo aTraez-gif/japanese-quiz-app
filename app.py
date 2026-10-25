@@ -197,7 +197,7 @@ if st.session_state.my_uid == "UID-16728":
 
 tab1, tab2, tab3 = st.tabs(["🏆 Arena Scoreboard", "⚔️ Active Quiz Room", "📈 My Personal Progress"])
 
---- TAB 1: GAMIFIED ENGAGING SCOREBOARD ---
+#--- TAB 1: GAMIFIED ENGAGING SCOREBOARD ---
 
 with tab1:
 if st.session_state.my_group == "SOLO":
@@ -225,7 +225,7 @@ st.dataframe(group_df[["Timestamp", "Name", "Topic", "Correct", "Incorrect"]], u
 else:
 st.info("No recorded score logs yet inside this zone. Use your invite links above!")
 
---- TAB 2: ACTIVE QUIZ ROOM WITH DIRECT PEER-CHALLENGE LINK ROUTING ---
+#--- TAB 2: ACTIVE QUIZ ROOM WITH DIRECT PEER-CHALLENGE LINK ROUTING ---
 
 with tab2:
 st.subheader("📝 Live Challenge")
@@ -316,7 +316,7 @@ del st.session_state.run_correct
 del st.session_state.run_incorrect
 st.rerun()
 
---- TAB 3: PERSONAL PROGRESS TRACKING TIMELINE ENGINE ---
+#--- TAB 3: PERSONAL PROGRESS TRACKING TIMELINE ENGINE ---
 
 with tab3:
 st.subheader("📈 My Personal Mastery Journey")
