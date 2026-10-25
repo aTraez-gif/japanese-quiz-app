@@ -184,14 +184,14 @@ if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
     st.sidebar.markdown(f'<a href="{st.session_state.invite_url}" target="_blank" class="wa-link">📲 Share Group Invite via WhatsApp</a>', unsafe_allow_html=True)
     st.sidebar.markdown(f'🌐 Join Global WhatsApp Community', unsafe_allow_html=True)
 
-#--- SECURE CONTENT ADMIN MODULE PANEL ---
-
+# --- SECURE CONTENT ADMIN MODULE PANEL ---
 st.sidebar.markdown("---")
 if st.session_state.my_uid == "UID-16728":
-with st.sidebar.expander("🛠️ Admin Controls"):
-admin_password = st.text_input("Admin Password:", type="password", key="admin_pwd_field")
-if admin_password == "Gaikokujin":
-st.success("Developer Access Enabled")
+    with st.sidebar.expander("🛠️ Admin Controls"):
+        admin_password = st.text_input("Admin Password:", type="password", key="admin_pwd_field")
+        if admin_password == "Gaikokujin":
+            st.success("Developer Access Enabled")
+
 
 --- PRIMARY INTERACTIVE NAVIGATION DECK ---
 
