@@ -14,7 +14,7 @@ st.markdown("""
         <meta name="apple-mobile-web-app-title" content="Nihongo Guild Network">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="application-name" content="Nihongo Guild Network">
-        <link rel="manifest" href="https://githubusercontent.com">
+        <link rel="manifest" href="https://raw.githubusercontent.com/aTraez-gif/japanese-quiz-app/main/manifest.json">
     </head>
     <style>
     /* Hide default framework wrapper layout margins */
