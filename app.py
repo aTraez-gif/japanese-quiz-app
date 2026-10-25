@@ -5,28 +5,16 @@ import urllib.parse
 import random
 import os
 
-# --- NATIVE HIGH-CONTRAST MOBILE THEMING & PWA OVERRIDES ---
+# --- NATIVE HIGH-CONTRAST MOBILE THEMING ---
 st.set_page_config(page_title="Nihongo Guild Network", page_icon="🇯🇵", layout="centered")
 
-# Injecting clean head metadata links to force mobile app name overrides
 st.markdown("""
-    <head>
-        <meta name="apple-mobile-web-app-title" content="Nihongo Guild Network">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="application-name" content="Nihongo Guild Network">
-        <link rel="manifest" href="https://raw.githubusercontent.com/aTraez-gif/japanese-quiz-app/main/manifest.json">
-    </head>
     <style>
-    /* Hide default framework wrapper layout margins */
-    #MainMenu {visibility: hidden !important;}
-    footer {visibility: hidden !important;}
-    header {visibility: hidden !important;}
-    .stDeployButton {display:none !important;}
-    .stActionButton {display: none !important;}
-    .stAppDeployButton {display: none !important;}
-    [data-testid="stStatusWidget"] {display: none !important;}
-    [data-testid="stConnectionStatus"] {display: none !important;}
-    iframe[title="streamlitApp"] + div {display: none !important;}
+    /* Hide desktop framework container components */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stDeployButton {display:none;}
     
     /* Responsive High-Contrast Sizing Controls */
     .main .block-container { max-width: 480px; padding-top: 0.5rem; }
@@ -44,7 +32,7 @@ st.markdown("""
 
 st.title("🇯🇵 Nihongo Guild Network")
 
-# --- LOCAL DATABASE PERSISTENCE STORAGE ENGINE ---
+# --- LOCAL LOCAL DATABASE PERSISTENCE STORAGE ENGINE ---
 DATA_FILE = "local_scores_ledger.csv"
 
 def get_scores_data():
