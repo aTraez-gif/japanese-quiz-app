@@ -193,7 +193,7 @@ if st.session_state.my_uid == "UID-16728":
             st.success("Developer Access Enabled")
 
 
---- PRIMARY INTERACTIVE NAVIGATION DECK ---
+#--- PRIMARY INTERACTIVE NAVIGATION DECK ---
 
 tab1, tab2, tab3 = st.tabs(["🏆 Arena Scoreboard", "⚔️ Active Quiz Room", "📈 My Personal Progress"])
 
