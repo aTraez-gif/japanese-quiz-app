@@ -5,16 +5,28 @@ import urllib.parse
 import random
 import os
 
-# --- NATIVE HIGH-CONTRAST MOBILE THEMING ---
+# --- NATIVE HIGH-CONTRAST MOBILE THEMING & PWA OVERRIDES ---
 st.set_page_config(page_title="Nihongo Guild Network", page_icon="🇯🇵", layout="centered")
 
+# Injecting clean head metadata links to force mobile app name overrides
 st.markdown("""
+    <head>
+        <meta name="apple-mobile-web-app-title" content="Nihongo Guild Network">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="Nihongo Guild Network">
+        <link rel="manifest" href="https://githubusercontent.com">
+    </head>
     <style>
-    /* Hide desktop framework container components */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stDeployButton {display:none;}
+    /* Hide default framework wrapper layout margins */
+    #MainMenu {visibility: hidden !important;}
+    footer {visibility: hidden !important;}
+    header {visibility: hidden !important;}
+    .stDeployButton {display:none !important;}
+    .stActionButton {display: none !important;}
+    .stAppDeployButton {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+    [data-testid="stConnectionStatus"] {display: none !important;}
+    iframe[title="streamlitApp"] + div {display: none !important;}
     
     /* Responsive High-Contrast Sizing Controls */
     .main .block-container { max-width: 480px; padding-top: 0.5rem; }
@@ -32,7 +44,7 @@ st.markdown("""
 
 st.title("🇯🇵 Nihongo Guild Network")
 
-# --- LOCAL LOCAL DATABASE PERSISTENCE STORAGE ENGINE ---
+# --- LOCAL DATABASE PERSISTENCE STORAGE ENGINE ---
 DATA_FILE = "local_scores_ledger.csv"
 
 def get_scores_data():
