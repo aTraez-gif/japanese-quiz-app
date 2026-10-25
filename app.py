@@ -61,10 +61,8 @@ DATA_FILE = "local_scores_ledger.csv"
 
 def get_scores_data():
     if os.path.exists(DATA_FILE):
-        try:
-            return pd.read_csv(DATA_FILE)
-        except:
-            pass
+        try: return pd.read_csv(DATA_FILE)
+        except: pass
     return pd.DataFrame(columns=["Timestamp", "User_ID", "Name", "Group_Code", "Topic", "Correct", "Incorrect"])
 
 def save_score_locally(uid, name, group, correct, incorrect):
@@ -82,8 +80,7 @@ def save_score_locally(uid, name, group, correct, incorrect):
     df.to_csv(DATA_FILE, index=False)
 
 scores_df = get_scores_data()
-GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
-
+GLOBAL_COMMUNITY_URL = "https://chat.whatsapp.com/I3ajCTSGOgo2UZpH5GnY2x"
 # --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX POOL ---
 @st.cache_data
 def get_automated_question_bank():
@@ -93,7 +90,7 @@ def get_automated_question_bank():
             "meaning": "No problem / There is no issue.",
             "desc": "'Mondai' translates to problem or question, and 'nai' means there isn't any. Use it casually to assure someone that a plan, task, or condition is safely under control.",
             "example": "A: 'Asu no kaigi, ma ni au?' (Meeting tomorrow, will you make it?) \nB: 'Mondai nai desu!' (No problem!)",
-            "options": ["Excuse me", "No problem", "Goodbye", "I don't understand"],
+            "Option_A": "Excuse me", "Option_B": "No problem", "Option_C": "Goodbye", "Option_D": "I don't understand",
             "correct": "B"
         },
         {
@@ -101,7 +98,7 @@ def get_automated_question_bank():
             "meaning": "There is / To have (Inanimate Objects).",
             "desc": "Used strictly for non-living items like places, buildings, plants, or concepts. It states existence or personal possession.",
             "example": "Kuruma ga arimasu. (I have a car / There is a car.)",
-            "options": ["People only", "Animals only", "Inanimate objects", "Moving things"],
+            "Option_A": "People only", "Option_B": "Animals only", "Option_C": "Inanimate objects", "Option_D": "Moving things",
             "correct": "C"
         },
         {
@@ -109,7 +106,7 @@ def get_automated_question_bank():
             "meaning": "There is not / Do not have (Inanimate Objects).",
             "desc": "The polite negative form of 'arimasu'. It denotes that a non-living object is missing or not owned.",
             "example": "Jikan ga arimasen. (I do not have time.)",
-            "options": ["I will go", "I don't have / there is none", "Please wait", "Thank you"],
+            "Option_A": "I will go", "Option_B": "I don't have / there is none", "Option_C": "Please wait", "Option_D": "Thank you",
             "correct": "B"
         },
         {
@@ -117,7 +114,7 @@ def get_automated_question_bank():
             "meaning": "To go.",
             "desc": "An active motion verb indicating movement away from your current position toward a physical destination.",
             "example": "Gakkou e ikimasu. (I am going to school.)",
-            "options": ["To eat", "To go", "To speak", "To sleep"],
+            "Option_A": "To eat", "Option_B": "To go", "Option_C": "To speak", "Option_D": "To sleep",
             "correct": "B"
         },
         {
@@ -125,7 +122,7 @@ def get_automated_question_bank():
             "meaning": "Will not go / Do not go.",
             "desc": "The polite negative expression of 'ikimasu'. Used to declare you aren't journeying to a specific location.",
             "example": "Doko mo ikimasen. (I am not going anywhere.)",
-            "options": ["I went yesterday", "I want to go", "I am going", "I will not go"],
+            "Option_A": "I went yesterday", "Option_B": "I want to go", "Option_C": "I am going", "Option_D": "I will not go",
             "correct": "D"
         }
     ]
@@ -221,13 +218,11 @@ if st.session_state.user_avatar:
 else:
     st.sidebar.markdown("🧑‍💻 *Default Avatar Active*")
 
-# Force profile info to render perfectly on mobile sidebars
 st.sidebar.write(f"👤 Name: **{st.session_state.my_name}**")
 st.sidebar.write(f"📧 Email: `{st.session_state.my_email}`")
 st.sidebar.write(f"🆔 Token ID: `{st.session_state.my_uid}`")
 st.sidebar.write(f"🛡️ Room Space: **{st.session_state.my_group}**")
 
-# Unblocked WhatsApp Action Redirect HTML Element Links
 if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
     st.sidebar.markdown(f'<a href="{st.session_state.invite_url}" target="_blank" class="mobile-btn wa-green">📲 Invite Circle Friends</a>', unsafe_allow_html=True)
 
@@ -335,11 +330,11 @@ with tab2:
         
         col1, col2 = st.columns(2)
         with col1:
-            ans_A = st.button(f"A) {row['options'][0]}", key=f"qa_A_{q_idx}", disabled=st.session_state.show_explanation)
-            ans_C = st.button(f"C) {row['options'][2]}", key=f"qa_C_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_A = st.button(f"A) {row['Option_A']}", key=f"qa_A_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_C = st.button(f"C) {row['Option_C']}", key=f"qa_C_{q_idx}", disabled=st.session_state.show_explanation)
         with col2:
-            ans_B = st.button(f"B) {row['options'][1]}", key=f"qa_B_{q_idx}", disabled=st.session_state.show_explanation)
-            ans_D = st.button(f"D) {row['options'][3]}", key=f"qa_D_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_B = st.button(f"B) {row['Option_B']}", key=f"qa_B_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_D = st.button(f"D) {row['Option_D']}", key=f"qa_D_{q_idx}", disabled=st.session_state.show_explanation)
             
         user_choice = None
         if ans_A: user_choice = "A"
@@ -375,7 +370,7 @@ with tab2:
                 st.session_state.show_explanation = False
                 st.rerun()
                 
-        # Deep linking formatting fix for seamless WhatsApp routing
+        # Unblocked peer challenge generator link with specific project context
         peer_challenge_msg = (
             f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\n"
             f"From player: {st.session_state.my_name} (Room: {st.session_state.my_group})\n\n"
@@ -386,7 +381,7 @@ with tab2:
         st.markdown(f'<a href="https://wa.me{urllib.parse.quote(peer_challenge_msg)}" target="_blank" class="mobile-btn wa-green">🚀 Throw Challenge & Invite to Room</a>', unsafe_allow_html=True)
         
     else:
-        st.success("🏁 Set Finished Successfully!")
+        st.success("🏁 Challenge Completed Successfully!")
         st.write(f"✅ Total Right: **{st.session_state.run_correct}**")
         st.write(f"❌ Total Missed: **{st.session_state.run_incorrect}**")
         
@@ -398,7 +393,7 @@ with tab2:
                 st.session_state.run_correct, 
                 st.session_state.run_incorrect
             )
-            st.success("Scores synced safely into local repository ledger storage file!")
+            st.success("Scores saved safely directly inside your GitHub repository storage file!")
             del st.session_state.quiz_index
             del st.session_state.run_correct
             del st.session_state.run_incorrect
