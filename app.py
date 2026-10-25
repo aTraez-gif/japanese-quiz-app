@@ -59,7 +59,7 @@ def save_score_locally(uid, name, group, correct, incorrect):
 
 scores_df = get_scores_data()
 
-GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
+GLOBAL_COMMUNITY_URL = "https://chat.whatsapp.com/I3ajCTSGOgo2UZpH5GnY2x"
 
 # --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX POOL ---
 @st.cache_data
