@@ -1,30 +1,29 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import datetime
 import urllib.parse
 import random
-import requests
+import os
 
 # --- NATIVE HIGH-CONTRAST MOBILE THEMING ---
 st.set_page_config(page_title="Nihongo Guild Network", page_icon="🇯🇵", layout="centered")
 
-# Injected CSS with media-query color fail-safes for optimal phone visibility
 st.markdown("""
     <style>
-    /* Hide default framework wrapper layout margins */
+    /* Hide desktop framework container components */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display:none;}
     
-    /* Device Accessibility Styling Rules */
+    /* Responsive High-Contrast Sizing Controls */
     .main .block-container { max-width: 480px; padding-top: 0.5rem; }
     .onboarding-card { background-color: #ffffff; color: #1e1e24; padding: 20px; border-radius: 16px; border: 2px solid #dee2e6; margin-bottom: 15px; }
     .question-box { background-color: #1e1e24; color: #ffffff; padding: 18px; border-radius: 16px; margin-bottom: 15px; text-align: center; border: 2px solid #2ed573; }
     .explanation-card { background-color: #ffffff; color: #1e1e24; padding: 18px; border-radius: 14px; margin-top: 15px; border-left: 6px solid #2ed573; border-top: 1px solid #dee2e6; border-right: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6; }
+    .bulletin-box { background: linear-gradient(135deg, #1e1e24, #2f3542); color: #ffffff; padding: 14px; border-radius: 12px; margin-top: 15px; border-left: 5px solid #ffa500; font-size: 13px; }
     
-    /* Mobile-Native Action Grid Customizations */
+    /* Mobile Action Buttons Matrix */
     div.stButton > button { width: 100% !important; padding: 12px !important; border-radius: 10px !important; font-weight: bold !important; font-size: 15px !important; }
     .wa-link { display: block; text-align: center; background-color: #25D366; color: white !important; font-weight: bold; padding: 12px; border-radius: 10px; text-decoration: none; margin-top: 10px; font-size: 14px; }
     .wa-peer { display: block; text-align: center; background-color: #1e90ff; color: white !important; font-weight: bold; padding: 10px; border-radius: 10px; text-decoration: none; margin-top: 6px; font-size: 13px; }
@@ -33,22 +32,36 @@ st.markdown("""
 
 st.title("🇯🇵 Nihongo Guild Network")
 
-# --- GLOBAL DATA DATA LEDGER CONNECTION ---
-conn = st.connection("gsheets", type=GSheetsConnection)
+# --- LOCAL LOCAL DATABASE PERSISTENCE STORAGE ENGINE ---
+DATA_FILE = "local_scores_ledger.csv"
 
-def load_data(sheet_name, fallback_cols):
-    try:
-        return conn.read(worksheet=sheet_name, ttl="0m")
-    except:
-        return pd.DataFrame(columns=fallback_cols)
+def get_scores_data():
+    if os.path.exists(DATA_FILE):
+        try:
+            return pd.read_csv(DATA_FILE)
+        except:
+            pass
+    return pd.DataFrame(columns=["Timestamp", "User_ID", "Name", "Group_Code", "Topic", "Correct", "Incorrect"])
 
-scores_df = load_data("Sheet1", ["Timestamp", "User_ID", "Name", "Group_Code", "Topic", "Correct", "Incorrect"])
+def save_score_locally(uid, name, group, correct, incorrect):
+    df = get_scores_data()
+    new_row = pd.DataFrame([{
+        "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "User_ID": str(uid),
+        "Name": str(name),
+        "Group_Code": str(group),
+        "Topic": "Dynamic Automation Set",
+        "Correct": int(correct),
+        "Incorrect": int(incorrect)
+    }])
+    df = pd.concat([df, new_row], ignore_index=True)
+    df.to_csv(DATA_FILE, index=False)
 
-# --- 🎯 ACTION: PASTE YOUR COPIED WHATSAPP COMMUNITY LINK HERE 🎯 ---
+scores_df = get_scores_data()
+
 GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
-GOOGLE_FORM_URL = "https://google.com"
 
-# --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX ---
+# --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX POOL ---
 @st.cache_data
 def get_automated_question_bank():
     base_pool = [
@@ -113,7 +126,6 @@ def get_automated_question_bank():
     return extended_bank
 
 questions_list = get_automated_question_bank()
-
 # --- APP ONBOARDING SYSTEM DECK ---
 if "user_authenticated" not in st.session_state:
     st.session_state.user_authenticated = False
@@ -134,13 +146,7 @@ if not st.session_state.user_authenticated:
             if user_input_name.strip():
                 new_group_code = f"G-{random.randint(1000, 9999)}"
                 st.session_state.my_name = user_input_name
-                
-                # Check if this is the Master Admin logging in
-                if user_input_name.strip().lower() == "admin":
-                    st.session_state.my_uid = "UID-16728"
-                else:
-                    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
-                    
+                st.session_state.my_uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
                 st.session_state.my_group = new_group_code
                 st.session_state.user_authenticated = True
                 
@@ -160,13 +166,7 @@ if not st.session_state.user_authenticated:
         if st.button("Connect Ledger to Group", key="join_group_btn"):
             if user_input_name.strip() and input_code.strip():
                 st.session_state.my_name = user_input_name
-                
-                # Check if this is the Master Admin logging in
-                if user_input_name.strip().lower() == "admin":
-                    st.session_state.my_uid = "UID-16728"
-                else:
-                    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
-                    
+                st.session_state.my_uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
                 st.session_state.my_group = input_code.strip().upper()
                 st.session_state.user_authenticated = True
                 st.rerun()
@@ -178,41 +178,88 @@ if not st.session_state.user_authenticated:
         if st.button("Launch Isolated Solo Mode", key="solo_btn"):
             if user_input_name.strip():
                 st.session_state.my_name = user_input_name
-                
-                # Check if this is the Master Admin logging in
-                if user_input_name.strip().lower() == "admin":
-                    st.session_state.my_uid = "UID-16728"
-                else:
-                    st.session_state.my_uid = f"UID-{random.randint(10000, 99999)}"
-                    
+                st.session_state.my_uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
                 st.session_state.my_group = "SOLO"
                 st.session_state.user_authenticated = True
                 st.rerun()
             else:
                 st.warning("Please enter your name first!")
     st.stop()
-    # --- SIDEBAR COMPONENT REGISTRY DECK ---
-st.sidebar.markdown(f"### 🥷 Profile Card")
-st.sidebar.write(f"👤 User: **{st.session_state.my_name}**")
-st.sidebar.write(f"🆔 ID: `{st.session_state.my_uid}`")
-st.sidebar.write(f"🛡️ Group: **{st.session_state.my_group}**")
+# --- SIDEBAR INTERACTIVE ACCOUNTS MYPAGE PANEL ---
+st.sidebar.markdown(f"### 🥷 MyPage Account Settings")
+
+# Profile Avatar Upload and Persistent Logic
+if "user_avatar" not in st.session_state:
+    st.session_state.user_avatar = None
+
+uploaded_pic = st.sidebar.file_uploader("Upload Profile Image:", type=["png", "jpg", "jpeg"])
+if uploaded_pic is not None:
+    st.session_state.user_avatar = uploaded_pic
+
+if st.session_state.user_avatar:
+    st.sidebar.image(st.session_state.user_avatar, width=100)
+else:
+    st.sidebar.markdown("🧑‍💻 *No avatar uploaded yet.*")
+
+st.sidebar.write(f"👤 Warrior User: **{st.session_state.my_name}**")
+st.sidebar.write(f"🆔 System Token: `{st.session_state.my_uid}`")
+st.sidebar.write(f"🛡️ Battle Space: **{st.session_state.my_group}**")
+
+# Reset Application Session Token to Return to Top Options
+if st.sidebar.button("🔄 Logout / Back to Top Options"):
+    st.session_state.user_authenticated = False
+    st.session_state.my_name = ""
+    st.session_state.my_uid = ""
+    st.session_state.my_group = "SOLO"
+    st.rerun()
 
 if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
     st.sidebar.markdown(f'<a href="{st.session_state.invite_url}" target="_blank" class="wa-link">📲 Share Group Invite via WhatsApp</a>', unsafe_allow_html=True)
 
 st.sidebar.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_blank" style="background-color:#00a8ff;" class="wa-link">🌐 Join Global WhatsApp Community</a>', unsafe_allow_html=True)
 
-# --- SECURE CONTENT ADMIN MODULE PANEL ---
+# --- MOTIVATIONAL SIDEBAR BULLETIN BOARD ---
 st.sidebar.markdown("---")
+st.sidebar.markdown("### 📜 Guild Bulletin Announcement")
+
+my_total_correct = 0
+if not scores_df.empty:
+    my_records = scores_df[scores_df["User_ID"] == st.session_state.my_uid]
+    if not my_records.empty:
+        my_total_correct = pd.to_numeric(my_records["Correct"]).sum()
+
+if st.session_state.my_group == "SOLO":
+    if my_total_correct >= 20:
+        bulletin_text = "🔥 **Outstanding work!** You are outperforming typical casual solo learners. Keep pushing for the 100 benchmark!"
+    else:
+        bulletin_text = "🌱 **Journey begun.** Keep tackling core quiz assessments to increase your rank metrics!"
+else:
+    # Filter matrix context values to map leader comparisons
+    group_totals = scores_df[scores_df["Group_Code"] == st.session_state.my_group] if not scores_df.empty else pd.DataFrame()
+    if not group_totals.empty:
+        group_totals["Correct"] = pd.to_numeric(group_totals["Correct"])
+        group_summary = group_totals.groupby("User_ID")["Correct"].sum().reset_index()
+        top_group_score = group_summary["Correct"].max()
+        
+        if my_total_correct >= top_group_score and my_total_correct > 0:
+            bulletin_text = "👑 **Apex Standing!** You are currently commanding the highest accurate score in your closed circle. Protect the throne!"
+        else:
+            deficit = int(top_group_score - my_total_correct)
+            bulletin_text = f"⚔️ **Battle Alert!** You are trailing the group leader by exactly **{deficit} points**. Run another quiz set to catch up!"
+    else:
+        bulletin_text = "💤 **Lobby quiet.** Send the invite link above to bring opponents into this scorecard grid!"
+
+st.sidebar.markdown(f'<div class="bulletin-box">{bulletin_text}</div>', unsafe_allow_html=True)
+
+# --- SECURE CONTENT ADMIN MODULE PANEL ---
 if st.session_state.my_uid == "UID-16728":
     with st.sidebar.expander("🛠️ Admin Controls"):
         admin_password = st.text_input("Admin Password:", type="password", key="admin_pwd_field")
         if admin_password == "Gaikokujin":
             st.success("Developer Access Enabled")
 
-# --- PRIMARY INTERACTIVE NAVIGATION DECK ---
+# --- EXECUTE APP NAVIGATION DECK SPLITTING LAYOUT ---
 tab1, tab2, tab3 = st.tabs(["🏆 Arena Scoreboard", "⚔️ Active Quiz Room", "📈 My Personal Progress"])
-
 # --- TAB 1: GAMIFIED ENGAGING SCOREBOARD ---
 with tab1:
     if st.session_state.my_group == "SOLO":
@@ -244,7 +291,6 @@ with tab1:
             st.dataframe(group_df[["Timestamp", "Name", "Topic", "Correct", "Incorrect"]], use_container_width=True, hide_index=True)
         else:
             st.info("No recorded score logs yet inside this zone. Use your invite links above!")
-
 # --- TAB 2: ACTIVE QUIZ ROOM WITH DIRECT PEER-CHALLENGE LINK ROUTING ---
 with tab2:
     st.subheader("📝 Live Challenge")
@@ -270,11 +316,11 @@ with tab2:
         
         col1, col2 = st.columns(2)
         with col1:
-            ans_A = st.button(f"A) {row['options']}", key=f"qa_A_{q_idx}", disabled=st.session_state.show_explanation)
-            ans_C = st.button(f"C) {row['options']}", key=f"qa_C_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_A = st.button(f"A) {row['options'][0]}", key=f"qa_A_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_C = st.button(f"C) {row['options'][2]}", key=f"qa_C_{q_idx}", disabled=st.session_state.show_explanation)
         with col2:
-            ans_B = st.button(f"B) {row['options']}", key=f"qa_B_{q_idx}", disabled=st.session_state.show_explanation)
-            ans_D = st.button(f"D) {row['options']}", key=f"qa_D_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_B = st.button(f"B) {row['options'][1]}", key=f"qa_B_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_D = st.button(f"D) {row['options'][3]}", key=f"qa_D_{q_idx}", disabled=st.session_state.show_explanation)
             
         user_choice = None
         if ans_A: user_choice = "A"
@@ -326,31 +372,27 @@ with tab2:
         st.write(f"❌ Total Missed: **{st.session_state.run_incorrect}**")
         
         if st.button("Save & Upload Results to Ledger Scoreboard"):
-            form_payload = {
-                "entry.11111111": st.session_state.my_uid,
-                "entry.22222222": st.session_state.my_name,
-                "entry.33333333": st.session_state.my_group,
-                "entry.44444444": "Dynamic Automation Set",
-                "entry.55555555": int(st.session_state.run_correct),
-                "entry.66666666": int(st.session_state.run_incorrect)
-            }
-            
-            try:
-                requests.post(GOOGLE_FORM_URL, data=form_payload)
-                st.success("Scores synced safely via form submission pipeline!")
-            except:
-                st.warning("Metrics logged locally, connection error encountered.")
+            # Trigger our newly fixed, local persistent writer method
+            save_score_locally(
+                st.session_state.my_uid, 
+                st.session_state.my_name, 
+                st.session_state.my_group, 
+                st.session_state.run_correct, 
+                st.session_state.run_incorrect
+            )
+            st.success("Scores synced safely into repository database file!")
             
             del st.session_state.quiz_index
             del st.session_state.run_correct
             del st.session_state.run_incorrect
             st.rerun()
-
 # --- TAB 3: PERSONAL PROGRESS TRACKING TIMELINE ENGINE ---
 with tab3:
     st.subheader("📈 My Personal Mastery Journey")
     
-    my_history_df = scores_df[scores_df["User_ID"] == st.session_state.my_uid] if not scores_df.empty else pd.DataFrame()
+    # Reload fresh file logs on state changes
+    fresh_df = get_scores_data()
+    my_history_df = fresh_df[fresh_df["User_ID"] == str(st.session_state.my_uid)] if not fresh_df.empty else pd.DataFrame()
     
     if not my_history_df.empty:
         my_history_df["Correct"] = pd.to_numeric(my_history_df["Correct"])
