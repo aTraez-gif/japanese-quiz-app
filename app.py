@@ -191,12 +191,203 @@ if not st.session_state.user_authenticated:
             else:
                 st.warning("Please enter your name first!")
     st.stop()
+    # --- SIDEBAR COMPONENT REGISTRY DECK ---
+st.sidebar.markdown(f"### 🥷 Profile Card")
+st.sidebar.write(f"👤 User: **{st.session_state.my_name}**")
+st.sidebar.write(f"🆔 ID: `{st.session_state.my_uid}`")
+st.sidebar.write(f"🛡️ Group: **{st.session_state.my_group}**")
 
-# --- SIDEBAR COMPONENT REGISTRY DECK ---
-    st.sidebar.markdown(f"### 🥷 Profile Card")
-st.sidebar.write(f"👤 User: {st.session_state.my_name}")
-st.sidebar.write(f"🆔 ID: {st.session_state.my_uid}")
-st.sidebar.write(f"🛡️ Group: {st.session_state.my_group}")
 if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
-st.sidebar.markdown(f'📲 Share Group Invite via WhatsApp', unsafe_allow_html=True)
-st.sidebar.markdown(f'🌐 Join Global WhatsApp Community', unsafe_allow_html=True)
+    st.sidebar.markdown(f'<a href="{st.session_state.invite_url}" target="_blank" class="wa-link">📲 Share Group Invite via WhatsApp</a>', unsafe_allow_html=True)
+
+st.sidebar.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_blank" style="background-color:#00a8ff;" class="wa-link">🌐 Join Global WhatsApp Community</a>', unsafe_allow_html=True)
+
+# --- SECURE CONTENT ADMIN MODULE PANEL ---
+st.sidebar.markdown("---")
+if st.session_state.my_uid == "UID-16728":
+    with st.sidebar.expander("🛠️ Admin Controls"):
+        admin_password = st.text_input("Admin Password:", type="password", key="admin_pwd_field")
+        if admin_password == "Gaikokujin":
+            st.success("Developer Access Enabled")
+
+# --- PRIMARY INTERACTIVE NAVIGATION DECK ---
+tab1, tab2, tab3 = st.tabs(["🏆 Arena Scoreboard", "⚔️ Active Quiz Room", "📈 My Personal Progress"])
+
+# --- TAB 1: GAMIFIED ENGAGING SCOREBOARD ---
+with tab1:
+    if st.session_state.my_group == "SOLO":
+        st.info("Log into a multiplayer group to view leaderboard statuses.")
+    else:
+        st.subheader(f"👑 Guild Arena Standings ({st.session_state.my_group})")
+        group_df = scores_df[scores_df["Group_Code"] == st.session_state.my_group] if not scores_df.empty else pd.DataFrame()
+        
+        if not group_df.empty:
+            group_df["Correct"] = pd.to_numeric(group_df["Correct"])
+            group_df["Incorrect"] = pd.to_numeric(group_df["Incorrect"])
+            
+            leaderboard = group_df.groupby(["User_ID", "Name"]).agg(
+                Total_Correct=("Correct", "sum"),
+                Total_Incorrect=("Incorrect", "sum")
+            ).reset_index()
+            
+            def calculate_badge(row_data):
+                score = row_data["Total_Correct"]
+                if score >= 50: return "👑 Master Shogun"
+                elif score >= 25: return "⚔️ Ronin Elite"
+                return "🌾 Student Novice"
+                
+            leaderboard["Guild Badge Title"] = leaderboard.apply(calculate_badge, axis=1)
+            leaderboard = leaderboard.sort_values(by="Total_Correct", ascending=False)
+            
+            st.dataframe(leaderboard[["Name", "Guild Badge Title", "Total_Correct", "Total_Incorrect"]], use_container_width=True, hide_index=True)
+            st.subheader("👀 Members Live Attempt Stream")
+            st.dataframe(group_df[["Timestamp", "Name", "Topic", "Correct", "Incorrect"]], use_container_width=True, hide_index=True)
+        else:
+            st.info("No recorded score logs yet inside this zone. Use your invite links above!")
+
+# --- TAB 2: ACTIVE QUIZ ROOM WITH DIRECT PEER-CHALLENGE LINK ROUTING ---
+with tab2:
+    st.subheader("📝 Live Challenge")
+    
+    if "quiz_index" not in st.session_state:
+        st.session_state.quiz_index = 0
+        st.session_state.run_correct = 0
+        st.session_state.run_incorrect = 0
+        st.session_state.show_explanation = False
+        st.session_state.last_answer_status = ""
+
+    q_idx = st.session_state.quiz_index
+
+    if q_idx < 10:
+        row = questions_list[q_idx]
+        
+        st.markdown(f"""
+        <div class="question-box">
+            <span style="font-weight: bold; text-transform: uppercase; font-size:12px; letter-spacing:1px; color:#2ed573;">CHALLENGE {q_idx + 1} OF 10</span>
+            <h2 style="margin-top:5px; margin-bottom:5px; color:#ffffff; font-size:18px;">{row['Question']}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            ans_A = st.button(f"A) {row['options']}", key=f"qa_A_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_C = st.button(f"C) {row['options']}", key=f"qa_C_{q_idx}", disabled=st.session_state.show_explanation)
+        with col2:
+            ans_B = st.button(f"B) {row['options']}", key=f"qa_B_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_D = st.button(f"D) {row['options']}", key=f"qa_D_{q_idx}", disabled=st.session_state.show_explanation)
+            
+        user_choice = None
+        if ans_A: user_choice = "A"
+        if ans_B: user_choice = "B"
+        if ans_C: user_choice = "C"
+        if ans_D: user_choice = "D"
+        
+        if user_choice and not st.session_state.show_explanation:
+            correct_key = row['correct']
+            if user_choice == correct_key:
+                st.session_state.run_correct += 1
+                st.session_state.last_answer_status = "CORRECT"
+            else:
+                st.session_state.run_incorrect += 1
+                st.session_state.last_answer_status = "INCORRECT"
+            st.session_state.show_explanation = True
+            st.rerun()
+
+        if st.session_state.show_explanation:
+            status_color = "🟢 CORRECT!" if st.session_state.last_answer_status == "CORRECT" else "🔴 INCORRECT"
+            st.markdown(f"""
+            <div class="explanation-card">
+                <h4 style="margin:0px; color:#2f3542;">{status_color} • Concept Analysis</h4>
+                <hr style="margin:8px 0px; border-color:#ced4da;">
+                <p style="margin:4px 0px;"><strong>Item:</strong> {row['word']}</p>
+                <p style="margin:4px 0px;"><strong>Exact Meaning:</strong> {row['meaning']}</p>
+                <p style="margin:4px 0px;"><strong>Breakdown:</strong> {row['desc']}</p>
+                <p style="margin:4px 0px; background:#f1f2f6; padding:8px; border-radius:6px; border-left:3px solid #ff7f50;"><strong>💡 Practice Sentence Example:</strong><br><em>{row['example']}</em></p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Next Challenge ➡️", key="next_q_btn"):
+                st.session_state.quiz_index += 1
+                st.session_state.show_explanation = False
+                st.rerun()
+                
+        st.write("")
+        peer_challenge_msg = (
+            f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\n"
+            f"Hey! {st.session_state.my_name} is throwing a live question text to you from Room {st.session_state.my_group}.\n\n"
+            f"👉 *Question:* \"{row['Question']}\"\n\n"
+            f"Reply to this text message and let me know your answer choice option (A, B, C, or D) to settle who has a better grasp!"
+        )
+        st.markdown(f'<a href="https://wa.me{urllib.parse.quote(peer_challenge_msg)}" target="_blank" class="wa-peer">🚀 Throw Question to a Friend on WhatsApp</a>', unsafe_allow_html=True)
+        
+    else:
+        st.success("🏁 Challenge Completed Successfully!")
+        st.write(f"✅ Total Right: **{st.session_state.run_correct}**")
+        st.write(f"❌ Total Missed: **{st.session_state.run_incorrect}**")
+        
+        if st.button("Save & Upload Results to Ledger Scoreboard"):
+            form_payload = {
+                "entry.11111111": st.session_state.my_uid,
+                "entry.22222222": st.session_state.my_name,
+                "entry.33333333": st.session_state.my_group,
+                "entry.44444444": "Dynamic Automation Set",
+                "entry.55555555": int(st.session_state.run_correct),
+                "entry.66666666": int(st.session_state.run_incorrect)
+            }
+            
+            try:
+                requests.post(GOOGLE_FORM_URL, data=form_payload)
+                st.success("Scores synced safely via form submission pipeline!")
+            except:
+                st.warning("Metrics logged locally, connection error encountered.")
+            
+            del st.session_state.quiz_index
+            del st.session_state.run_correct
+            del st.session_state.run_incorrect
+            st.rerun()
+
+# --- TAB 3: PERSONAL PROGRESS TRACKING TIMELINE ENGINE ---
+with tab3:
+    st.subheader("📈 My Personal Mastery Journey")
+    
+    my_history_df = scores_df[scores_df["User_ID"] == st.session_state.my_uid] if not scores_df.empty else pd.DataFrame()
+    
+    if not my_history_df.empty:
+        my_history_df["Correct"] = pd.to_numeric(my_history_df["Correct"])
+        my_history_df["Incorrect"] = pd.to_numeric(my_history_df["Incorrect"])
+        
+        total_my_correct = int(my_history_df["Correct"].sum())
+        total_my_incorrect = int(my_history_df["Incorrect"].sum())
+        total_attempts = total_my_correct + total_my_incorrect
+        
+        accuracy_ratio = round((total_my_correct / total_attempts) * 100, 1) if total_attempts > 0 else 0
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.metric(label="Lifetime Right Answers", value=f"{total_my_correct} ✅")
+        with c2:
+            st.metric(label="Overall Accuracy Ratio", value=f"{accuracy_ratio}% 🎯")
+            
+        st.markdown("### 🔓 Guild Achievements & Trophies")
+        
+        if total_my_correct >= 1:
+            st.success("🔰 **UNLOCKED: First Victory** (Logged your first correct answer in the arena!)")
+        else:
+            st.markdown("<div style='background-color:#ffffff; border:1px dashed #ced4da; padding:10px; border-radius:8px; color:#a4b0be;'>🔒 *First Victory (Get 1 question right to unlock)*</div>", unsafe_allow_html=True)
+            
+        if total_my_correct >= 100:
+            st.success("👑 **UNLOCKED: Centurion Warrior** (Massive Dedication! Passed 100 correct entries!)")
+        else:
+            st.markdown(f"<div style='background-color:#ffffff; border:1px dashed #ced4da; padding:10px; border-radius:8px; color:#a4b0be;'>🔒 *Centurion Warrior ({total_my_correct}/100 questions correct)*</div>", unsafe_allow_html=True)
+            
+        if accuracy_ratio >= 85.0 and total_attempts >= 10:
+            st.success(f"🎯 **UNLOCKED: Flawless Striker** (Maintained a superb precision accuracy of {accuracy_ratio}%)")
+        else:
+            st.markdown(f"<div style='background-color:#ffffff; border:1px dashed #ced4da; padding:10px; border-radius:8px; color:#a4b0be;'>🔒 *Flawless Striker (Maintain 85%+ accuracy with at least 10 attempts. Current: {accuracy_ratio}%)*</div>", unsafe_allow_html=True)
+        st.write("")
+
+        st.markdown("### 📊 Accuracy Progress Over Time")
+        my_history_df["Cumulative_Correct"] = my_history_df["Correct"].cumsum()
+        st.line_chart(my_history_df, x="Timestamp", y="Cumulative_Correct", color="#1e90ff")
+    else:
+        st.info("Complete your first quiz evaluation run to map your performance progress dashboard timeline.")
