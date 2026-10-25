@@ -8,30 +8,24 @@ import os
 # --- NATIVE HIGH-CONTRAST MOBILE THEMING & METADATA CONFIGURATION ---
 st.set_page_config(page_title="Nihongo Guild Network", page_icon="🇯🇵", layout="centered")
 
-# Inject HTML metadata and style rules tailored for high mobile device visibility
+# Inject accessibility styling rules tailored to fix mobile phone visibility issues
 st.markdown("""
-    <head>
-        <meta name="apple-mobile-web-app-title" content="Nihongo Guild Network">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="application-name" content="Nihongo Guild Network">
-        <link rel="manifest" href="https://githubusercontent.com">
-    </head>
     <style>
     /* Force high-visibility text colors on all mobile screens and operating themes */
-    html, body, [data-testid="stSidebar"] {
+    html, body, [data-testid="stSidebar"], [data-testid="stSidebar"] * {
         color: #ffffff !important;
         background-color: #0f0f12 !important;
     }
     p, span, label, h1, h2, h3, h4, li, div {
         color: #ffffff !important;
     }
-    /* Style form input text fields to be visible against dark backgrounds */
+    /* Style form input text fields to be highly visible */
     input, select, textarea {
         color: #000000 !important;
         background-color: #ffffff !important;
     }
     
-    /* Hide standard platform headers and watermarks */
+    /* Hide standard desktop platform headers and watermarks */
     #MainMenu {visibility: hidden !important;}
     footer {visibility: hidden !important;}
     header {visibility: hidden !important;}
@@ -87,6 +81,7 @@ def save_score_locally(uid, name, group, correct, incorrect):
 
 scores_df = get_scores_data()
 GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
+
 # --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX POOL ---
 @st.cache_data
 def get_automated_question_bank():
@@ -179,17 +174,13 @@ if not st.session_state.user_authenticated:
                 st.session_state.my_group = new_group_code
                 st.session_state.user_authenticated = True
                 
-                # Dynamic secure link creation for email logging delivery verification
-                encoded_email = urllib.parse.quote(user_input_email)
-                email_trigger_url = f"https://web3forms.com{encoded_email}&message=Your+Nihongo+Guild+Group+Code+Is:+{new_group_code}"
-                
                 invite_msg = (
                     f"🇯🇵 *Join my private Japanese Learning Arena!* 🥷\n\n"
                     f"Open the app link, choose 'Join Existing Group', and enter our code:\n"
                     f"👉 *Group Code:* {new_group_code}"
                 )
                 st.session_state.invite_url = f"https://wa.me{urllib.parse.quote(invite_msg)}"
-                st.info(f"📩 Code receipt configuration packed for: {user_input_email}")
+                st.info(f"📩 Registration locked in for: {user_input_email}")
                 st.rerun()
             else:
                 st.error("Please fill in both fields correctly (include '@' in your email)!")
@@ -221,10 +212,10 @@ if not st.session_state.user_authenticated:
             else:
                 st.error("Please enter your name and email first!")
     st.stop()
+
 # --- SIDEBAR INTERACTIVE MOBILE ACCOUNT MYPAGE PANEL ---
 st.sidebar.markdown(f"### 🥷 Profile Account MyPage")
 
-# Profile Image File Selection Layout Block
 if "user_avatar" not in st.session_state:
     st.session_state.user_avatar = None
 
@@ -237,7 +228,7 @@ if st.session_state.user_avatar:
 else:
     st.sidebar.markdown("🧑‍💻 *Default Avatar Active*")
 
-# Display critical profile metadata variables clearly for mobile viewport configurations
+# Force profile info to render perfectly on mobile sidebars
 st.sidebar.write(f"👤 Name: **{st.session_state.my_name}**")
 st.sidebar.write(f"📧 Email: `{st.session_state.my_email}`")
 st.sidebar.write(f"🆔 Token ID: `{st.session_state.my_uid}`")
@@ -249,7 +240,7 @@ if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
 
 st.sidebar.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_blank" class="mobile-btn wa-blue">🌐 Global Community Channels</a>', unsafe_allow_html=True)
 
-if st.sidebar.button("🔄 Logout / Switch Configuration Profile"):
+if st.sidebar.button("🔄 Logout / Back to Options"):
     st.session_state.user_authenticated = False
     st.session_state.my_name = ""
     st.session_state.my_uid = ""
@@ -279,9 +270,9 @@ else:
             bulletin_text = "👑 **Arena Apex Leader!** You hold the crown inside this private lobby tracker network right now."
         else:
             deficit = int(top_group_score - my_total_correct)
-            bulletin_text = f"⚔️ **Opponent Ahead!** You are currently trailing the room leader by **{deficit} points**. Run a challenge to close the margin!"
+            bulletin_text = f"⚔️ **Opponent Ahead!** You are trailing the room leader by **{deficit} points**. Run a challenge to close the margin!"
     else:
-        bulletin_text = "💤 **Lobby silent.** Broadcast the invite link above to trigger active match tracking records."
+        bulletin_text = "💤 **Lobby quiet.** Broadcast the invite link above to trigger active match tracking records."
 
 st.sidebar.markdown(f'<div class="bulletin-box">{bulletin_text}</div>', unsafe_allow_html=True)
 
@@ -326,7 +317,7 @@ with tab1:
         else:
             st.info("No recorded score logs inside this space yet. Throw a link challenge to initialize data tracking rows!")
 
-# --- TAB 2: ACTIVE QUIZ ROOM WITH TARGETED COMPREHENSION REDIRECT SHARE LINKS ---
+# --- TAB 2: ACTIVE QUIZ ROOM WITH TARGETED COMPREHENSION SHARE LINKS ---
 with tab2:
     st.subheader("📝 Live Challenge")
     
@@ -351,11 +342,11 @@ with tab2:
         
         col1, col2 = st.columns(2)
         with col1:
-            ans_A = st.button(f"A) {row['options']}", key=f"qa_A_{q_idx}", disabled=st.session_state.show_explanation)
-            ans_C = st.button(f"C) {row['options']}", key=f"qa_C_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_A = st.button(f"A) {row['options'][0]}", key=f"qa_A_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_C = st.button(f"C) {row['options'][2]}", key=f"qa_C_{q_idx}", disabled=st.session_state.show_explanation)
         with col2:
-            ans_B = st.button(f"B) {row['options']}", key=f"qa_B_{q_idx}", disabled=st.session_state.show_explanation)
-            ans_D = st.button(f"D) {row['options']}", key=f"qa_D_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_B = st.button(f"B) {row['options'][1]}", key=f"qa_B_{q_idx}", disabled=st.session_state.show_explanation)
+            ans_D = st.button(f"D) {row['options'][3]}", key=f"qa_D_{q_idx}", disabled=st.session_state.show_explanation)
             
         user_choice = None
         if ans_A: user_choice = "A"
@@ -382,7 +373,7 @@ with tab2:
                 <p><strong>Target Word:</strong> {row['word']}</p>
                 <p><strong>Exact Meaning:</strong> {row['meaning']}</p>
                 <p><strong>Breakdown Rules:</strong> {row['desc']}</p>
-                <p style="background:#0f0f12; padding:10px; border-radius:8px; border-left:3px solid #ffa500;"><strong>💡 Practice Sentence Example:</strong><br><em>{row['example']}</em></p>
+                <p style="background:#0f0f12; padding:10px; border-radius:8px; border-left:3px solid #ffa500; color:#fff !important;"><strong>💡 Practice Sentence Example:</strong><br><em>{row['example']}</em></p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -391,7 +382,7 @@ with tab2:
                 st.session_state.show_explanation = False
                 st.rerun()
                 
-        # High-impact unblocked viral loop structure to acquire new active user profiles
+        # Unblocked, completely fixed deep linking parameter matrix
         peer_challenge_msg = (
             f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\n"
             f"From player: {st.session_state.my_name} (Room: {st.session_state.my_group})\n\n"
@@ -414,7 +405,7 @@ with tab2:
                 st.session_state.run_correct, 
                 st.session_state.run_incorrect
             )
-            st.success("Scores synced safely into local repository ledger storage database file!")
+            st.success("Scores synced safely into local ledger storage file!")
             del st.session_state.quiz_index
             del st.session_state.run_correct
             del st.session_state.run_incorrect
