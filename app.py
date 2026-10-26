@@ -52,7 +52,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- LOCAL LOCAL DATABASE PERSISTENCE STORAGE ENGINE ---
+# --- LOCAL DATABASE PERSISTENCE STORAGE ENGINE ---
 DATA_FILE = "local_scores_ledger.csv"
 CACHE_FILE = "user_session_cache.json"
 
@@ -93,76 +93,98 @@ def clear_cached_session():
         except: pass
 
 scores_df = get_scores_data()
+GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
 
-# --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX POOL ---
+# --- HUMAN-CENTRIC CONTEXTUAL JAPANESE QUIZ SYSTEM ---
 @st.cache_data
 def get_automated_question_bank():
-    base_pool = [
+    """Generates an expanding deck of organic, real-life conversation scenarios instead of system codes."""
+    base_scenarios = [
         {
+            "Question": "Your Japanese coworker looks stressed about an upcoming presentation. You want to smoothly reassure them that everything is fine. What do you say?",
             "word": "Mondai nai (問題ない)",
             "meaning": "No problem / There is no issue.",
-            "desc": "'Mondai' translates to problem or question, and 'nai' means there isn't any. Use it casually to assure someone that a plan, task, or condition is safely under control.",
-            "example": "A: 'Asu no kaigi, ma ni au?' (Meeting tomorrow, will you make it?) \nB: 'Mondai nai desu!' (No problem!)",
-            "Option_A": "Excuse me", "Option_B": "No problem", "Option_C": "Goodbye", "Option_D": "I don't understand",
+            "desc": "'Mondai' means problem/question, and 'nai' means there isn't any. It's the ultimate natural phrase to put a peer's mind at ease.",
+            "example": "A: 'Kaigi no junbi, ma ni au kana...' (I wonder if I'll make it in time for the meeting...) \nB: '大丈夫、問題ないよ！' (Don't worry, no problem!)",
+            "Option_A": "Shitsurei shimasu (Excuse me)",
+            "Option_B": "Mondai nai (No problem)",
+            "Option_C": "Sayounara (Goodbye)",
+            "Option_D": "Wakarimasen (I don't understand)",
             "correct": "B"
         },
         {
+            "Question": "You are at a local Izakaya in Tokyo trying to check if they have an English menu layout available. How should you ask the staff?",
             "word": "Arimasu (あります)",
             "meaning": "There is / To have (Inanimate Objects).",
-            "desc": "Used strictly for non-living items like places, buildings, plants, or concepts. It states existence or personal possession.",
-            "example": "Kuruma ga arimasu. (I have a car / There is a car.)",
-            "Option_A": "People only", "Option_B": "Animals only", "Option_C": "Inanimate objects", "Option_D": "Moving things",
+            "desc": "Use 'arimasu' when asking about or stating the existence of non-living things (menus, keys, time, cars).",
+            "example": "英語のメニューはありますか？ (Eigo no menyuu wa arimasu ka? / Do you have an English menu?)",
+            "Option_A": "Eigo no menyuu wa imasu ka?",
+            "Option_B": "Eigo no menyuu wa ikimasu ka?",
+            "Option_C": "Eigo no menyuu wa arimasu ka?",
+            "Option_D": "Eigo no menyuu wa arimasen ka?",
             "correct": "C"
         },
         {
+            "Question": "A friend asks if you want to join them for a weekend trip to Kyoto, but you are completely buried in work. How do you politely tell them you don't have time?",
             "word": "Arimasen (ありません)",
             "meaning": "There is not / Do not have (Inanimate Objects).",
-            "desc": "The polite negative form of 'arimasu'. It denotes that a non-living object is missing or not owned.",
-            "example": "Jikan ga arimasen. (I do not have time.)",
-            "Option_A": "I will go", "Option_B": "I don't have / there is none", "Option_C": "Please wait", "Option_D": "Thank you",
+            "desc": "'Arimasen' is the polite negative form of 'arimasu'. Use it to say you don't possess something inanimate, like time (jikan) or money (kane).",
+            "example": "残念ですが、時間がありません。 (Zannen desu ga, jikan ga arimasen. / Regrettably, I don't have time.)",
+            "Option_A": "Jikan ga ikimasen.",
+            "Option_B": "Jikan ga arimasen.",
+            "Option_C": "Jikan ga imasen.",
+            "Option_D": "Jikan ga tabemasen.",
             "correct": "B"
+        },
+        {
+            "Question": "Your friends are meeting up at Shinjuku Station tonight. You want to tell them excitedly: 'I am going to the station right now!' Which motion verb fits perfectly?",
+            "word": "Ikimasu (行きます)",
+            "meaning": "To go.",
+            "desc": "'Ikimasu' is the active motion verb indicating you are moving away from where you are toward a target destination.",
+            "example": "今から駅へ行きます！ (Ima kara eki e ikimasu! / I am going to the station right now!)",
+            "Option_A": "Eki e tabemasu.",
+            "Option_B": "Eki e ikimasu.",
+            "Option_C": "Eki e hanashimasu.",
+            "Option_D": "Eki e nemasu.",
+            "correct": "B"
+        },
+        {
+            "Question": "Someone invites you to a late-night party, but you plan to stay home to rest. How do you clearly say: 'I will not go tonight'?",
+            "word": "Ikimasen (行きません)",
+            "meaning": "Will not go / Do not go.",
+            "desc": "This is the polite negative expression of 'ikimasu'. It lets people know you are turning down an invitation to a physical place.",
+            "example": "今夜は行きません。 (Konya wa ikimasen. / I will not go tonight.)",
+            "Option_A": "Konya wa ikimashita.",
+            "Option_B": "Konya wa ikitai desu.",
+            "Option_C": "Konya wa ikimasu.",
+            "Option_D": "Konya wa ikimasen.",
+            "correct": "D"
         }
     ]
+    
+    # Mix and shuffle organic scenarios to keep repetitions feeling fresh and context-rich
     extended_bank = []
-    scenarios = ["tomorrow morning", "tonight late", "at the Tokyo office", "with the language team"]
-    for i in range(150):
-        for base in base_pool:
-            scen = random.choice(scenarios)
+    prefixes = [
+        "Review Session: ",
+        "Daily Practice: ",
+        "Quick Drill: ",
+        "Guild Challenge: "
+    ]
+    
+    for i in range(100):
+        random.shuffle(base_scenarios)
+        for base in base_scenarios:
             item = base.copy()
             item["ID"] = len(extended_bank) + 1
-            item["Question"] = f"When evaluating a setup scheduled {scen}, what is the correct alignment for '{item['word']}'?"
+            # Add subtle framing prefixes so the items feel diverse over long rounds
+            pfx = random.choice(prefixes) if i > 0 else ""
+            if pfx:
+                item["Question"] = pfx + item["Question"][0].lower() + item["Question"][1:]
             extended_bank.append(item)
+            
     return extended_bank
 
 questions_list = get_automated_question_bank()
-# --- INITIALIZE STATE ROUTERS ---
-if "user_authenticated" not in st.session_state:
-    cached = get_cached_session()
-    if cached:
-        st.session_state.user_authenticated = True
-        st.session_state.my_name = cached["name"]
-        st.session_state.my_email = cached["email"]
-        st.session_state.my_uid = cached["uid"]
-        st.session_state.my_group = cached["group"]
-        
-        # Fire silent background login notification alert
-        try:
-            requests.post("https://web3forms.com", data={
-                "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
-                "email": cached["email"],
-                "subject": "Nihongo Guild - Security Login Notification Alert",
-                "message": f"Security Alert: Your profile account ({cached['name']}) has successfully auto-logged into the Guild Arena on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}."
-            })
-        except: pass
-    else:
-        st.session_state.user_authenticated = False
-        st.session_state.my_name = ""
-        st.session_state.my_uid = ""
-        st.session_state.my_group = "SOLO"
-        st.session_state.my_email = ""
-
-if "current_page_view" not in st.session_state:
-    st.session_state.current_page_view = "ARENA"
 
 # --- ONBOARDING GATEWAY SYSTEM ---
 if not st.session_state.user_authenticated:
