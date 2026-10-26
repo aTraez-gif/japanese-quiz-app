@@ -5,7 +5,7 @@ import urllib.parse
 import random
 import os
 
-# --- NATIVE HIGH-CONTRAST MOBILE THEMING & METADATA CONFIGURATION ---
+# --- NATIVE HIGH-CONTRAST MOBILE THEMING ---
 st.set_page_config(page_title="Nihongo Guild Network", page_icon="🇯🇵", layout="centered")
 
 # Inject accessibility styling rules tailored to fix mobile phone visibility issues
@@ -80,7 +80,8 @@ def save_score_locally(uid, name, group, correct, incorrect):
     df.to_csv(DATA_FILE, index=False)
 
 scores_df = get_scores_data()
-GLOBAL_COMMUNITY_URL = "https://chat.whatsapp.com/I3ajCTSGOgo2UZpH5GnY2x"
+GLOBAL_COMMUNITY_URL = "
+https://chat.whatsapp.com/I3ajCTSGOgo2UZpH5GnY2x"
 # --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX POOL ---
 @st.cache_data
 def get_automated_question_bank():
@@ -202,7 +203,6 @@ if not st.session_state.user_authenticated:
             else:
                 st.error("Please enter your name and email first!")
     st.stop()
-
 # --- SIDEBAR INTERACTIVE MOBILE ACCOUNT MYPAGE PANEL ---
 st.sidebar.markdown(f"### 🥷 Profile Account MyPage")
 
@@ -218,11 +218,13 @@ if st.session_state.user_avatar:
 else:
     st.sidebar.markdown("🧑‍💻 *Default Avatar Active*")
 
+# Force profile info to render perfectly on mobile sidebars
 st.sidebar.write(f"👤 Name: **{st.session_state.my_name}**")
 st.sidebar.write(f"📧 Email: `{st.session_state.my_email}`")
 st.sidebar.write(f"🆔 Token ID: `{st.session_state.my_uid}`")
 st.sidebar.write(f"🛡️ Room Space: **{st.session_state.my_group}**")
 
+# Unblocked WhatsApp Action Redirect HTML Element Links
 if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
     st.sidebar.markdown(f'<a href="{st.session_state.invite_url}" target="_blank" class="mobile-btn wa-green">📲 Invite Circle Friends</a>', unsafe_allow_html=True)
 
@@ -370,7 +372,7 @@ with tab2:
                 st.session_state.show_explanation = False
                 st.rerun()
                 
-        # Unblocked peer challenge generator link with specific project context
+        # Deep linking formatting fix for seamless WhatsApp routing
         peer_challenge_msg = (
             f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\n"
             f"From player: {st.session_state.my_name} (Room: {st.session_state.my_group})\n\n"
