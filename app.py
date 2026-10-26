@@ -94,7 +94,6 @@ def clear_cached_session():
 
 scores_df = get_scores_data()
 GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
-
 # --- HUMAN-CENTRIC CONTEXTUAL JAPANESE QUIZ SYSTEM ---
 @st.cache_data
 def get_automated_question_bank():
@@ -161,38 +160,51 @@ def get_automated_question_bank():
             "correct": "D"
         }
     ]
-    
-    # Mix and shuffle organic scenarios to keep repetitions feeling fresh and context-rich
     extended_bank = []
-    prefixes = [
-        "Review Session: ",
-        "Daily Practice: ",
-        "Quick Drill: ",
-        "Guild Challenge: "
-    ]
-    
     for i in range(100):
-        random.shuffle(base_scenarios)
         for base in base_scenarios:
             item = base.copy()
             item["ID"] = len(extended_bank) + 1
-            # Add subtle framing prefixes so the items feel diverse over long rounds
-            pfx = random.choice(prefixes) if i > 0 else ""
-            if pfx:
-                item["Question"] = pfx + item["Question"][0].lower() + item["Question"][1:]
             extended_bank.append(item)
-            
     return extended_bank
 
 questions_list = get_automated_question_bank()
+# --- INITIALIZE STATE ROUTERS & COOKIE-MIMIC PERSISTENCE ---
+if "user_authenticated" not in st.session_state:
+    cached = get_cached_session()
+    if cached:
+        st.session_state.user_authenticated = True
+        st.session_state.my_name = cached["name"]
+        st.session_state.my_email = cached["email"]
+        st.session_state.my_uid = cached["uid"]
+        st.session_state.my_group = cached["group"]
+        
+        # Fire background secure email notification on returning visits
+        try:
+            requests.post("https://web3forms.com", data={
+                "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
+                "email": cached["email"],
+                "subject": "Nihongo Guild - Security Access Log Update",
+                "message": f"Konnichiwa! Your profile ({cached['name']}) has successfully auto-logged into your persistent session grid on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}."
+            })
+        except: pass
+    else:
+        st.session_state.user_authenticated = False
+        st.session_state.my_name = ""
+        st.session_state.my_uid = ""
+        st.session_state.my_group = "SOLO"
+        st.session_state.my_email = ""
 
-# --- ONBOARDING GATEWAY SYSTEM ---
+if "current_page_view" not in st.session_state:
+    st.session_state.current_page_view = "ARENA"
+
+# --- ONBOARDING REGISTER PANEL GATEWAY ---
 if not st.session_state.user_authenticated:
-    st.title("🇯🇵 Nihongo Guild Network")
     st.subheader("👋 Welcome to the Guild Arena")
+    st.write("Setup your learning account profile below:")
     
     user_input_name = st.text_input("Profile Display Name / Nickname:", placeholder="e.g., Alex")
-    user_input_email = st.text_input("Your Secure Email Address (For Account Validation Verification):", placeholder="name@example.com")
+    user_input_email = st.text_input("Your Secure Email Address (For Account Validation & Logs):", placeholder="name@example.com")
     st.markdown("---")
     
     with st.expander("➕ Option 1: Invite Friends & Create a Closed Group"):
@@ -201,9 +213,7 @@ if not st.session_state.user_authenticated:
                 new_group_code = f"G-{random.randint(1000, 9999)}"
                 uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
                 
-                # Cache user profile data values locally
                 save_cached_session(user_input_name, user_input_email, uid, new_group_code)
-                
                 st.session_state.my_name = user_input_name
                 st.session_state.my_email = user_input_email
                 st.session_state.my_uid = uid
@@ -214,13 +224,13 @@ if not st.session_state.user_authenticated:
                     requests.post("https://web3forms.com", data={
                         "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
                         "email": user_input_email,
-                        "subject": "Nihongo Guild - Account Creation & Verification Receipt Link",
-                        "message": f"Welcome to the Arena! Your profile account setup is complete. \n\nWarrior: {user_input_name}\nLobby Group Code: {new_group_code}\n\nYour account has been securely verified and cached on this phone device."
+                        "subject": "Nihongo Guild - Registration Validation Completed",
+                        "message": f"Konnichiwa {user_input_name}!\n\nYour account validation is fully completed. Your lobby tracking room code is: {new_group_code}.\n\nShare this code with your friends to play together!"
                     })
                 except: pass
                 st.rerun()
             else:
-                st.error("Please fill in both fields correctly (include '@' in your email)!")
+                st.error("Please fill in fields correctly and include '@' in your email!")
 
     with st.expander("🤝 Option 2: Join an Existing Closed Group"):
         input_code = st.text_input("Enter Group Code (e.g., G-1234):", key="join_code_field")
@@ -228,7 +238,6 @@ if not st.session_state.user_authenticated:
             if user_input_name.strip() and input_code.strip() and "@" in user_input_email:
                 uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
                 group_token = input_code.strip().upper()
-                
                 save_cached_session(user_input_name, user_input_email, uid, group_token)
                 st.session_state.my_name = user_input_name
                 st.session_state.my_email = user_input_email
@@ -253,7 +262,7 @@ if not st.session_state.user_authenticated:
             else:
                 st.error("Please enter your name and email first!")
     st.stop()
-    # --- 👑 UNIVERSAL TOP NAVIGATION ROW PORTAL 👑 ---
+    # --- 👑 UNIVERSAL TOP PRIVILEGED HEADER NAVIGATION PORTAL 👑 ---
 st.markdown("<div class='header-bar'>", unsafe_allow_html=True)
 nh_col1, nh_col2, nh_col3 = st.columns(3)
 with nh_col1:
@@ -270,7 +279,7 @@ with nh_col3:
         st.rerun()
 st.markdown("</div>", unsafe_allow_html=True)
 
-# --- ROUTER VIEWPORT ---
+# --- CENTRAL ROUTER DECK ---
 if st.session_state.current_page_view == "ARENA":
     tab1, tab2, tab3 = st.tabs(["🏆 Scoreboard", "⚔️ Quiz Room", "📈 Progress Journey"])
     
@@ -280,7 +289,6 @@ if st.session_state.current_page_view == "ARENA":
         else:
             st.subheader(f"👑 Room Standings: {st.session_state.my_group}")
             group_df = scores_df[scores_df["Group_Code"] == st.session_state.my_group] if not scores_df.empty else pd.DataFrame()
-            
             if not group_df.empty:
                 group_df["Correct"] = pd.to_numeric(group_df["Correct"])
                 group_df["Incorrect"] = pd.to_numeric(group_df["Incorrect"])
@@ -308,7 +316,7 @@ if st.session_state.current_page_view == "ARENA":
             st.session_state.last_answer_status = ""
 
         q_idx = st.session_state.quiz_index
-        if q_idx < 10:
+        if q_idx < len(questions_list):
             row = questions_list[q_idx]
             st.markdown(f'<div class="question-box"><span style="font-weight: bold; font-size:12px; letter-spacing:1px;">CHALLENGE {q_idx + 1} OF 10</span><h3>{row["Question"]}</h3></div>', unsafe_allow_html=True)
             
@@ -344,7 +352,7 @@ if st.session_state.current_page_view == "ARENA":
                     st.session_state.show_explanation = False
                     st.rerun()
                     
-            # Native Streamlit Link Button Override to Prevent WhatsApp Pop-up Blocking Architecture
+            # PWA-Safe, native link widget button layout to completely stop mobile click blocking
             peer_challenge_msg = (
                 f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\n"
                 f"From player: {st.session_state.my_name} (Room: {st.session_state.my_group})\n\n"
@@ -354,8 +362,8 @@ if st.session_state.current_page_view == "ARENA":
             )
             st.link_button("🚀 Throw Challenge to WhatsApp Friend", f"https://wa.me{urllib.parse.quote(peer_challenge_msg)}")
             
-        else:
-            st.success("🏁 Challenge Completed Successfully!")
+        if st.session_state.quiz_index >= 10:
+            st.success("🏁 Set Finished Successfully!")
             if st.button("Save & Upload Results to Ledger Scoreboard"):
                 save_score_locally(st.session_state.my_uid, st.session_state.my_name, st.session_state.my_group, st.session_state.run_correct, st.session_state.run_incorrect)
                 del st.session_state.quiz_index
@@ -387,7 +395,7 @@ if st.session_state.current_page_view == "ARENA":
             st.info("Complete your first quiz evaluation run to map your performance progress dashboard timeline.")
 
 elif st.session_state.current_page_view == "MYPAGE":
-    st.subheader("🥷 Profile Account MyPage Portal")
+    st.subheader("🥷 MyPage Account Settings")
     uploaded_pic = st.file_uploader("Upload Profile Image Avatar:", type=["png", "jpg", "jpeg"])
     if uploaded_pic is not None:
         st.image(uploaded_pic, width=120)
@@ -397,6 +405,8 @@ elif st.session_state.current_page_view == "MYPAGE":
     st.write(f"🆔 Personal Account Token: `{st.session_state.my_uid}`")
     st.write(f"🛡️ Synced Lobby Group: **{st.session_state.my_group}**")
     
+    st.link_button("🌐 Join Global WhatsApp Community", GLOBAL_COMMUNITY_URL)
+    
     if st.button("🔄 Clear Cached Session (Logout)"):
         clear_cached_session()
         st.session_state.user_authenticated = False
@@ -405,11 +415,10 @@ elif st.session_state.current_page_view == "MYPAGE":
 
 elif st.session_state.current_page_view == "AI_AGENT":
     st.subheader("🤖 AI Sensei Hub & Q&A Assistant")
-    st.info("AI Core Status: Preparing properties for the generative LLM pipeline node. Ready for custom query inputs.")
+    st.info("AI Core Status: Preparing properties for the generative LLM pipeline node.")
     
-    ai_query = st.text_input("Ask AI Sensei a Japanese grammar query or frame a concept question:", placeholder="e.g., Explain the difference between particle WA and GA")
+    ai_query = st.text_input("Ask AI Sensei a Japanese grammar query or frame a concept question:", placeholder="e.g., Explain the difference between WA and GA")
     if ai_query:
-        # Pre-allocated structural logic placeholder for upcoming AI API responses
         st.markdown(f"""
         <div class='explanation-card'>
             <h4>🤖 AI Sensei Analysis Mock Sandbox</h4>
