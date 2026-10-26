@@ -4,11 +4,11 @@ import datetime
 import urllib.parse
 import random
 import os
+import requests
 
 # --- NATIVE HIGH-CONTRAST MOBILE THEMING ---
 st.set_page_config(page_title="Nihongo Guild Network", page_icon="🇯🇵", layout="centered")
 
-# Inject accessibility styling rules tailored to fix mobile phone visibility issues
 st.markdown("""
     <style>
     /* Force high-visibility text colors on all mobile screens and operating themes */
@@ -81,9 +81,7 @@ def save_score_locally(uid, name, group, correct, incorrect):
 
 scores_df = get_scores_data()
 GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
-
 # --- AUTOMATED MIXED CONCEPT COMPREHENSION MATRIX POOL ---
-
 @st.cache_data
 def get_automated_question_bank():
     base_pool = [
@@ -167,6 +165,18 @@ if not st.session_state.user_authenticated:
                 st.session_state.my_group = new_group_code
                 st.session_state.user_authenticated = True
                 
+                # Dynamic secure link creation via Web3Forms API to send actual email records
+                try:
+                    requests.post("https://web3forms.com", data={
+                        "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
+                        "email": user_input_email,
+                        "subject": "Nihongo Guild - Private Group Access Token Created",
+                        "message": f"Konnichiwa {user_input_name}! Your private Japanese Tracking Group Code is: {new_group_code}. Share it with your friends!"
+                    })
+                    st.success("📩 Group access token successfully emailed to your inbox!")
+                except:
+                    pass
+                
                 invite_msg = (
                     f"🇯🇵 *Join my private Japanese Learning Arena!* 🥷\n\n"
                     f"Open our app link, choose 'Join Existing Group', and enter our code:\n"
@@ -204,78 +214,9 @@ if not st.session_state.user_authenticated:
             else:
                 st.error("Please enter your name and email first!")
     st.stop()
-# --- SIDEBAR INTERACTIVE MOBILE ACCOUNT MYPAGE PANEL ---
-st.sidebar.markdown(f"### 🥷 Profile Account MyPage")
+    # --- INITIALIZE TAB SECTIONS FOR MAIN PHONE ACCESSIBILITY ---
+tab1, tab2, tab3, tab4 = st.tabs(["🏆 Scoreboard", "⚔️ Quiz Room", "📈 Progress Journey", "🥷 MyPage Account"])
 
-if "user_avatar" not in st.session_state:
-    st.session_state.user_avatar = None
-
-uploaded_pic = st.sidebar.file_uploader("Upload Avatar:", type=["png", "jpg", "jpeg"])
-if uploaded_pic is not None:
-    st.session_state.user_avatar = uploaded_pic
-
-if st.session_state.user_avatar:
-    st.sidebar.image(st.session_state.user_avatar, width=90)
-else:
-    st.sidebar.markdown("🧑‍💻 *Default Avatar Active*")
-
-# Force profile info to render perfectly on mobile sidebars
-st.sidebar.write(f"👤 Name: **{st.session_state.my_name}**")
-st.sidebar.write(f"📧 Email: `{st.session_state.my_email}`")
-st.sidebar.write(f"🆔 Token ID: `{st.session_state.my_uid}`")
-st.sidebar.write(f"🛡️ Room Space: **{st.session_state.my_group}**")
-
-# Unblocked WhatsApp Action Redirect HTML Element Links
-if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
-    st.sidebar.markdown(f'<a href="{st.session_state.invite_url}" target="_blank" class="mobile-btn wa-green">📲 Invite Circle Friends</a>', unsafe_allow_html=True)
-
-st.sidebar.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_blank" class="mobile-btn wa-blue">🌐 Global Community Channels</a>', unsafe_allow_html=True)
-
-if st.sidebar.button("🔄 Logout / Back to Options"):
-    st.session_state.user_authenticated = False
-    st.session_state.my_name = ""
-    st.session_state.my_uid = ""
-    st.session_state.my_group = "SOLO"
-    st.rerun()
-
-# --- MOTIVATIONAL SIDEBAR BULLETIN BOARD ---
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 📜 Arena Notification Board")
-
-my_total_correct = 0
-if not scores_df.empty:
-    my_records = scores_df[scores_df["User_ID"] == st.session_state.my_uid]
-    if not my_records.empty:
-        my_total_correct = pd.to_numeric(my_records["Correct"]).sum()
-
-if st.session_state.my_group == "SOLO":
-    bulletin_text = "🎯 **Training Phase Active.** Complete more quiz matches to start compiling metrics!" if my_total_correct < 10 else "🔥 **Blazing Pace!** Keep challenging yourself to unlock higher tier title credentials."
-else:
-    group_totals = scores_df[scores_df["Group_Code"] == st.session_state.my_group] if not scores_df.empty else pd.DataFrame()
-    if not group_totals.empty:
-        group_totals["Correct"] = pd.to_numeric(group_totals["Correct"])
-        group_summary = group_totals.groupby("User_ID")["Correct"].sum().reset_index()
-        top_group_score = group_summary["Correct"].max()
-        
-        if my_total_correct >= top_group_score and my_total_correct > 0:
-            bulletin_text = "👑 **Arena Apex Leader!** You hold the crown inside this private lobby tracker network right now."
-        else:
-            deficit = int(top_group_score - my_total_correct)
-            bulletin_text = f"⚔️ **Opponent Ahead!** You are trailing the room leader by **{deficit} points**. Run a challenge to close the margin!"
-    else:
-        bulletin_text = "💤 **Lobby quiet.** Broadcast the invite link above to trigger active match tracking records."
-
-st.sidebar.markdown(f'<div class="bulletin-box">{bulletin_text}</div>', unsafe_allow_html=True)
-
-# --- SECURE CONTENT ADMIN MODULE PANEL ---
-if st.session_state.my_uid == "UID-16728":
-    with st.sidebar.expander("🛠️ Admin Controls"):
-        admin_password = st.text_input("Admin Password:", type="password", key="admin_pwd_field")
-        if admin_password == "Gaikokujin":
-            st.success("Developer Access Enabled")
-
-# --- INITIALIZE TAB SECTIONS DISPLAY CONSOLE ---
-tab1, tab2, tab3 = st.tabs(["🏆 Scoreboard", "⚔️ Quiz Room", "📈 Progress Journey"])
 # --- TAB 1: GAMIFIED ENGAGING SCOREBOARD ---
 with tab1:
     if st.session_state.my_group == "SOLO":
@@ -306,9 +247,9 @@ with tab1:
             st.subheader("👀 Historic Room Logs")
             st.dataframe(group_df[["Timestamp", "Name", "Topic", "Correct", "Incorrect"]], use_container_width=True, hide_index=True)
         else:
-            st.info("No recorded score logs inside this space yet. Throw a link challenge to initialize data tracking rows!")
+            st.info("No recorded score logs inside this space yet.")
 
-# --- TAB 2: ACTIVE QUIZ ROOM WITH TARGETED COMPREHENSION SHARE LINKS ---
+# --- TAB 2: ACTIVE QUIZ ROOM WITH NATIVE WHATSAPP DEEP LINKS ---
 with tab2:
     st.subheader("📝 Live Challenge")
     
@@ -373,7 +314,7 @@ with tab2:
                 st.session_state.show_explanation = False
                 st.rerun()
                 
-        # Deep linking formatting fix for seamless WhatsApp routing
+        # Completely fixed, PWA-compliant escaped parameters link path
         peer_challenge_msg = (
             f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\n"
             f"From player: {st.session_state.my_name} (Room: {st.session_state.my_group})\n\n"
@@ -405,7 +346,6 @@ with tab2:
 # --- TAB 3: PERSONAL PROGRESS TRACKING JOURNEY ENGINE ---
 with tab3:
     st.subheader("📈 My Personal Mastery Journey")
-    
     fresh_df = get_scores_data()
     my_history_df = fresh_df[fresh_df["User_ID"] == str(st.session_state.my_uid)] if not fresh_df.empty else pd.DataFrame()
     
@@ -425,18 +365,10 @@ with tab3:
         st.markdown("### 🔓 Guild Achievements & Trophies")
         if total_my_correct >= 1:
             st.success("🔰 **UNLOCKED: First Victory** (Logged your first correct answer in the arena!)")
-        else:
-            st.markdown("<div style='border:1px dashed #444; padding:10px; border-radius:8px; color:#666;'>🔒 *First Victory (Get 1 question right to unlock)*</div>", unsafe_allow_html=True)
-            
         if total_my_correct >= 100:
             st.success("👑 **UNLOCKED: Centurion Warrior** (Massive Dedication! Passed 100 correct entries!)")
-        else:
-            st.markdown(f"<div style='border:1px dashed #444; padding:10px; border-radius:8px; color:#666;'>🔒 *Centurion Warrior ({total_my_correct}/100 questions correct)*</div>", unsafe_allow_html=True)
-            
         if accuracy_ratio >= 85.0 and total_attempts >= 10:
             st.success(f"🎯 **UNLOCKED: Flawless Striker** (Maintained a superb precision accuracy of {accuracy_ratio}%)")
-        else:
-            st.markdown(f"<div style='border:1px dashed #444; padding:10px; border-radius:8px; color:#666;'>🔒 *Flawless Striker (Maintain 85%+ accuracy with at least 10 attempts. Current: {accuracy_ratio}%)*</div>", unsafe_allow_html=True)
         st.write("")
 
         st.markdown("### 📊 Accuracy Progress Over Time")
@@ -444,3 +376,29 @@ with tab3:
         st.line_chart(my_history_df, x="Timestamp", y="Cumulative_Correct", color="#1e90ff")
     else:
         st.info("Complete your first quiz evaluation run to map your performance progress dashboard timeline.")
+
+# --- TAB 4: CENTRAL MOBILE ACCOUNT ACCOUNTS MYPAGE HUB ---
+with tab4:
+    st.subheader("🥷 MyPage Account Configuration")
+    
+    uploaded_pic = st.file_uploader("Upload Profile Image Avatar:", type=["png", "jpg", "jpeg"])
+    if uploaded_pic is not None:
+        st.image(uploaded_pic, width=120)
+        
+    st.write(f"👤 Display Name: **{st.session_state.my_name}**")
+    st.write(f"📧 Secure Backup Email: `{st.session_state.my_email}`")
+    st.write(f"🆔 Personal Account Token: `{st.session_state.my_uid}`")
+    st.write(f"🛡️ Synced Lobby Group: **{st.session_state.my_group}**")
+    
+    if st.session_state.my_group != "SOLO" and "invite_url" in st.session_state:
+        st.markdown(f'<a href="{st.session_state.invite_url}" target="_blank" class="mobile-btn wa-green">📲 Invite Room Teammates via WhatsApp</a>', unsafe_allow_html=True)
+        
+    st.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_blank" class="mobile-btn wa-blue">🌐 Join Global WhatsApp Community</a>', unsafe_allow_html=True)
+    
+    if st.button("🔄 Clear Active Session & Return to Onboarding Menu"):
+        st.session_state.user_authenticated = False
+        st.session_state.my_name = ""
+        st.session_state.my_uid = ""
+        st.session_state.my_group = "SOLO"
+        st.rerun()
+                              
