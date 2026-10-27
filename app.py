@@ -424,8 +424,7 @@ if st.session_state.current_page_view == "ARENA":
                 st.dataframe(leaderboard.sort_values(by="Total_Correct", ascending=False), use_container_width=True, hide_index=True)
             else:
                 st.info("No recorded scores logged inside this group area yet.")
-
-elif st.session_state.current_page_view == "MYPAGE":
+                elif st.session_state.current_page_view == "MYPAGE":
     st.subheader("🥷 MyPage Account Configuration")
     uploaded_pic = st.file_uploader("Upload Profile Image Avatar:", type=["png", "jpg", "jpeg"])
     if uploaded_pic is not None: st.image(uploaded_pic, width=120)
@@ -441,12 +440,12 @@ elif st.session_state.current_page_view == "MYPAGE":
         st.session_state.user_authenticated = False
         st.session_state.current_page_view = "ARENA"
         st.rerun()
-
-elif st.session_state.current_page_view == "AI_AGENT":
+    elif st.session_state.current_page_view == "AI_AGENT":
     st.subheader("🤖 AI Sensei Assistant Educator")
     
     col_esc_a, col_esc_b = st.columns(2)
-    with col_esc_a: st.caption("Ask queries to instantly generate challenge cards.")
+    with col_esc_a: 
+        st.caption("Ask queries to instantly generate challenge cards.")
     with col_esc_b:
         if st.button("❌ Close Hub", key="ai_escape_exit_btn"):
             st.session_state.current_page_view = "ARENA"
@@ -513,4 +512,4 @@ elif st.session_state.current_page_view == "AI_AGENT":
         )
         # Using target="_top" and whatsapp:// protocol forces Chrome Mobile to hand off the action to the native OS app wrapper
         st.markdown(f'<a href="whatsapp://send?text={urllib.parse.quote(mock_ai_challenge)}" target="_top" class="unblocked-wa-link">🚀 Throw This AI Concept Challenge to Friend</a>', unsafe_allow_html=True)
-            
+        
