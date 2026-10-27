@@ -38,7 +38,7 @@ st.markdown("""
     iframe[title="streamlitApp"] + div {display: none !important;}
     
     /* Responsive High-Contrast Sizing Controls */
-    .main .block-container { max-width: 480px; padding-top: 0.1rem; }
+    .main .block-container { max-width: 480px; padding-top: 0.2rem; }
     .header-bar { background-color: #1e1e24; padding: 6px 4px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #2d2d3a; }
     .onboarding-card { background-color: #1e1e24; color: #ffffff !important; padding: 20px; border-radius: 16px; border: 2px solid #2ed573; margin-bottom: 15px; }
     .question-box { background-color: #2ed573; color: #000000 !important; padding: 18px; border-radius: 16px; margin-bottom: 15px; text-align: center; }
@@ -48,7 +48,27 @@ st.markdown("""
     
     /* Native Side-by-Side Compact Navigation Button Styles */
     div.stButton > button { width: 100% !important; padding: 8px 4px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 15px !important; background: #2ed573 !important; color: #000000 !important; border: none !important; }
-    div[data-testid="stLinkButton"] > a { width: 100% !important; text-align: center !important; background-color: #25D366 !important; color: #ffffff !important; padding: 12px !important; border-radius: 10px !important; font-weight: bold !important; text-decoration: none !important; display: inline-block !important; }
+    
+    /* High-Visibility Custom WhatsApp Direct Share Tiles (Popup-Blocker Safe) */
+    .unblocked-wa-link { 
+        display: block !important; 
+        width: 100% !important; 
+        text-align: center !important; 
+        background-color: #25D366 !important; 
+        color: white !important; 
+        font-weight: bold !important; 
+        padding: 12px !important; 
+        border-radius: 10px !important; 
+        text-decoration: none !important; 
+        margin-top: 10px !important; 
+        font-size: 15px !important;
+        box-sizing: border-box !important;
+        box-shadow: 0 4px 10px rgba(37,211,102,0.3) !important;
+    }
+    .unblocked-wa-link.wa-blue {
+        background-color: #1e90ff !important;
+        box-shadow: 0 4px 10px rgba(30,144,255,0.3) !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -93,9 +113,11 @@ def clear_cached_session():
         except: pass
 
 scores_df = get_scores_data()
+GLOBAL_COMMUNITY_URL = "https://whatsapp.com"
 # --- HUMAN-CENTRIC CONTEXTUAL JAPANESE QUIZ SYSTEM ---
 @st.cache_data
 def get_automated_question_bank():
+    """Generates an expanding deck of organic, real-life conversation scenarios instead of system codes."""
     base_scenarios = [
         {
             "Question": "Your Japanese coworker looks stressed about an upcoming presentation. You want to smoothly reassure them that everything is fine. What do you say?",
@@ -123,6 +145,24 @@ def get_automated_question_bank():
             "example": "残念ですが、時間がありません。 (Zannen desu ga, jikan ga arimasen. / Regrettably, I don't have time.)",
             "Option_A": "Jikan ga ikimasen.", "Option_B": "Jikan ga arimasen.", "Option_C": "Jikan ga imasen.", "Option_D": "Jikan ga tabemasen.",
             "correct": "B"
+        },
+        {
+            "Question": "Your friends are meeting up at Shinjuku Station tonight. You want to tell them excitedly: 'I am going to the station right now!' Which motion verb fits perfectly?",
+            "word": "Ikimasu (行きます)",
+            "meaning": "To go.",
+            "desc": "'Ikimasu' is the active motion verb indicating you are moving away from where you are toward a target destination.",
+            "example": "今から駅へ行きます！ (Ima kara eki e ikimasu! / I am going to the station right now!)",
+            "Option_A": "Eki e tabemasu.", "Option_B": "Eki e ikimasu.", "Option_C": "Eki e hanashimasu.", "Option_D": "Eki e nemasu.",
+            "correct": "B"
+        },
+        {
+            "Question": "Someone invites you to a late-night party, but you plan to stay home to rest. How do you clearly say: 'I will not go tonight'?",
+            "word": "Ikimasen (行きません)",
+            "meaning": "Will not go / Do not go.",
+            "desc": "This is the polite negative expression of 'ikimasu'. It lets people know you are turning down an invitation to a physical place.",
+            "example": "今夜は行きません。 (Konya wa ikimasen. / I will not go tonight.)",
+            "Option_A": "Konya wa ikimashita.", "Option_B": "Konya wa ikitai desu.", "Option_C": "Konya wa ikimasu.", "Option_D": "Konya wa ikimasen.",
+            "correct": "D"
         }
     ]
     extended_bank = []
@@ -134,8 +174,7 @@ def get_automated_question_bank():
     return extended_bank
 
 questions_list = get_automated_question_bank()
-
-# --- INITIALIZE STATE ROUTERS & COOKIE-MIMIC PERSISTENCE ---
+          # --- INITIALIZE STATE ROUTERS & COOKIE-MIMIC PERSISTENCE ---
 if "user_authenticated" not in st.session_state:
     cached = get_cached_session()
     if cached:
@@ -144,6 +183,7 @@ if "user_authenticated" not in st.session_state:
         st.session_state.my_email = cached["email"]
         st.session_state.my_uid = cached["uid"]
         st.session_state.my_group = cached["group"]
+        
         try:
             requests.post("https://web3forms.com", data={
                 "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
@@ -176,12 +216,14 @@ if not st.session_state.user_authenticated:
             if user_input_name.strip() and "@" in user_input_email:
                 new_group_code = f"G-{random.randint(1000, 9999)}"
                 uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
+                
                 save_cached_session(user_input_name, user_input_email, uid, new_group_code)
                 st.session_state.my_name = user_input_name
                 st.session_state.my_email = user_input_email
                 st.session_state.my_uid = uid
                 st.session_state.my_group = new_group_code
                 st.session_state.user_authenticated = True
+                
                 try:
                     requests.post("https://web3forms.com", data={
                         "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
@@ -190,6 +232,14 @@ if not st.session_state.user_authenticated:
                         "message": f"Konnichiwa {user_input_name}! Your room code is: {new_group_code}."
                     })
                 except: pass
+                
+                invite_msg = (
+                    f"🇯🇵 *Join my private Japanese Learning Arena!* 🥷\n\n"
+                    f"Open our app link, choose 'Join Existing Group', and enter our code:\n"
+                    f"👉 *Group Code:* {new_group_code}"
+                )
+                # Escape link architecture using top-level targets for Chrome Mobile unblocking
+                st.markdown(f'<a href="whatsapp://send?text={urllib.parse.quote(invite_msg)}" target="_top" class="unblocked-wa-link">📲 Invite Friends & Go To App</a>', unsafe_allow_html=True)
                 st.rerun()
             else:
                 st.error("Please fill in fields correctly and include '@' in your email!")
@@ -207,7 +257,24 @@ if not st.session_state.user_authenticated:
                 st.session_state.my_group = group_token
                 st.session_state.user_authenticated = True
                 st.rerun()
-                # --- 👑 PERMANENT UNIVERSAL SIDE-BY-SIDE MOBILE HEADER NAVBAR 👑 ---
+            else:
+                st.error("Make sure all input fields are valid!")
+
+    with st.expander("📖 Option 3: Simply Start Learning Solo"):
+        if st.button("Launch Isolated Solo Mode", key="solo_btn"):
+            if user_input_name.strip() and "@" in user_input_email:
+                uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
+                save_cached_session(user_input_name, user_input_email, uid, "SOLO")
+                st.session_state.my_name = user_input_name
+                st.session_state.my_email = user_input_email
+                st.session_state.my_uid = uid
+                st.session_state.my_group = "SOLO"
+                st.session_state.user_authenticated = True
+                st.rerun()
+            else:
+                st.error("Please enter your name and email first!")
+    st.stop()
+# --- 👑 PERMANENT UNIVERSAL SIDE-BY-SIDE MOBILE HEADER NAVBAR 👑 ---
 st.markdown("<div class='header-bar'>", unsafe_allow_html=True)
 nh_col1, nh_col2, nh_col3 = st.columns(3)
 with nh_col1:
@@ -250,9 +317,9 @@ else:
 
 st.markdown(f'<div class="bulletin-box">📜 <strong>Guild Update:</strong> {bulletin_text}</div>', unsafe_allow_html=True)
 st.write("")
+
 # --- CORE APPLICATION DECK DISPATCHER ---
 if st.session_state.current_page_view == "ARENA":
-    # Refactored Sub-Navigation Layout to align with the Progress Journey redirect property
     sub_col1, sub_col2, sub_col3 = st.columns(3)
     with sub_col1:
         if st.button("📈 Journey", key="sub_j_btn"): st.session_state.arena_sub_tab = "JOURNEY"; st.rerun()
@@ -330,8 +397,9 @@ if st.session_state.current_page_view == "ARENA":
                     st.session_state.show_explanation = False
                     st.rerun()
             
+            # PWA-Safe top escape routing to fully stop Google Chrome mobile click blocking layers
             peer_challenge_msg = f"⚔️ *Nihongo Peer Challenge Duel!* 🥷\n\nFrom player: {st.session_state.my_name} (Room: {st.session_state.my_group})\n\n👉 *Challenge Scenario:* \"{row['Question']}\"\n\n🔗 https://streamlit.app"
-            st.link_button("🚀 Throw Challenge to WhatsApp Friend", f"https://wa.me{urllib.parse.quote(peer_challenge_msg)}")
+            st.markdown(f'<a href="whatsapp://send?text={urllib.parse.quote(peer_challenge_msg)}" target="_top" class="unblocked-wa-link">🚀 Throw Challenge & Invite to Room</a>', unsafe_allow_html=True)
             
         if st.session_state.quiz_index >= 10:
             st.success("🏁 Challenge Set Finished Successfully!")
@@ -367,29 +435,82 @@ elif st.session_state.current_page_view == "MYPAGE":
     st.write(f"🆔 Personal Account Token: `{st.session_state.my_uid}`")
     st.write(f"🛡️ Synced Lobby Group: **{st.session_state.my_group}**")
     
-    st.link_button("🤝 Join Global Language Hub Community", "https://whatsapp.com")
+    st.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_top" class="unblocked-wa-link wa-blue">🤝 Join Global Language Hub Community</a>', unsafe_allow_html=True)
     if st.button("🔄 Clear Device Cache (Logout)"):
-        clear_cached_session()
+               clear_cached_session()
         st.session_state.user_authenticated = False
         st.session_state.current_page_view = "ARENA"
         st.rerun()
 
 elif st.session_state.current_page_view == "AI_AGENT":
     st.subheader("🤖 AI Sensei Assistant Educator")
-    st.markdown("<div class='onboarding-card'>💬 <em>'Konnichiwa! I am your AI Sensei. Ask me any question about Japanese particles, grammar rules, or phrases, and I will break it down like a personal conversational tutor!'</em></div>", unsafe_allow_html=True)
     
-    ai_query = st.text_input("Ask AI Sensei anything:", placeholder="e.g., Explain when to use the particle 'WA' vs 'GA'")
-    if ai_query:
-        st.markdown(f"""
-        <div class='explanation-card'>
-            <h4 style='color:#2ed573 !important;'>🤖 AI Sensei Concept Breakdown Tutorial</h4>
-            <p><strong>Your Question Focus:</strong> "{ai_query}"</p>
-            <hr style='border-color:#444;'>
-            <p><strong>🎓 Grammar Guide Explanation:</strong> Great question! In conversational contexts, this forms a central pillar of understanding. I am preparing your target tutorial mapping node properties.</p>
-            <p style='background:#0f0f12; padding:10px; border-radius:8px; border-left:4px solid #ff7f50;'><strong>📝 Tutor Practice Sentence Example:</strong><br><em>A: 'Kore wa eigo no menyuu desu.' (This is an English menu.)</em></p>
-        </div>
-        """, unsafe_allow_html=True)
+    col_esc_a, col_esc_b = st.columns(2)
+    with col_esc_a: st.caption("Ask queries to instantly generate challenge cards.")
+    with col_esc_b:
+        if st.button("❌ Close Hub", key="ai_escape_exit_btn"):
+            st.session_state.current_page_view = "ARENA"
+            st.session_state.arena_sub_tab = "JOURNEY"
+            st.rerun()
+            
+    st.markdown("---")
+    
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = [
+            {"role": "assistant", "text": "Konnichiwa! ⛩️ I am your personal Nihongo Tutor. Type any phrase, grammar rule, or particle confusion below. I will immediately break down the concept and generate a custom challenge card to test your friends on WhatsApp!"}
+        ]
         
-        mock_ai_challenge = f"🥷 *Nihongo AI Sensei Challenge!* 🤖\n\nMy AI Educator just generated a grammar breakdown challenge concept for us regarding: '{ai_query}'\n\nTap the link to join our active tracking lobby room: \n🔗 https://streamlit.app"
-        st.link_button("🚀 Throw This AI Concept Challenge to Friend", f"https://wa.me{urllib.parse.quote(mock_ai_challenge)}")
-                    
+    for message in st.session_state.chat_history:
+        if message["role"] == "user":
+            st.markdown(f"<div style='background-color:#2f3542; padding:12px; border-radius:12px; margin-bottom:10px;'><strong>👤 You:</strong> {message['text']}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='explanation-card' style='margin-top:0px; margin-bottom:10px;'><h4 style='color:#2ed573 !important; margin:0;'>🤖 AI Sensei</h4><p style='margin-top:5px; color:#ffffff !important;'>{message['text']}</p></div>", unsafe_allow_html=True)
+
+    student_query = st.chat_input("Ask AI Sensei a language question...")
+    if student_query:
+        st.session_state.chat_history.append({"role": "user", "text": student_query})
+        query_lower = student_query.lower()
+        
+        if "wa" in query_lower and "ga" in query_lower:
+            ai_reply = (
+                "Excellent question! The division between **は (Wa)** and **が (Ga)** is a vital grammar milestone:\n\n"
+                "1. **は (Wa) introduces the overall Topic:** Think of it as setting up a spotlight over a general conversation subject ('As for X...').\n"
+                "2. **が (Ga) pinpoints the specific Subject actor:** It delivers brand new or highly emphasized information to the sentence tracker.\n\n"
+                "📝 **Tutor Sentence Comparison:**\n"
+                "• *Kore wa eigo no menyuu desu.* (As for this, it is an English menu.)\n"
+                "• *Menyuu ga arimasu!* (An English menu is the specific thing that exists right here!)"
+            )
+        elif "arimasu" in query_lower or "imasu" in query_lower:
+            ai_reply = (
+                "Great observation! Both **あります (Arimasu)** and **います (Imasu)** denote presence ('there is/are' or 'to have'), but they obey strict entity property filters:\n\n"
+                "1. **あります (Arimasu):** Reserved exclusively for *inanimate, non-living things* (objects, language menus, time, cars, concepts).\n"
+                "2. **います (Imasu):** Reserved strictly for *living, independently moving creatures* (people, friends, coworkers, animals).\n\n"
+                "💡 **Practice Sentences Example Matrix:**\n"
+                "• *Jikan ga arimasu.* (I have time.)\n"
+                "• *Tomodachi ga imasu.* (I have friends.)"
+            )
+        else:
+            ai_reply = (
+                f"That is a wonderful conversational target! Regarding your inquiry about **'{student_query}'**, "
+                "this structural rule serves as a key pillar for formulating clear expressions in daily encounters.\n\n"
+                "To get a true grasp of this concept, let's look at how it maps to an active example sentence row:\n"
+                "👉 *'Mondai nai desu kara, anshin shite kudasai!'* (There is no problem, so please ease your mind!)"
+            )
+            
+        st.session_state.chat_history.append({"role": "assistant", "text": ai_reply})
+        st.rerun()
+
+    if len(st.session_state.chat_history) > 1:
+        last_user_query = next((msg["text"] for msg in reversed(st.session_state.chat_history) if msg["role"] == "user"), "Japanese Concept Evaluation")
+        st.write("---")
+        
+        mock_ai_challenge = (
+            f"🥷 *Nihongo AI Sensei Challenge!* 🤖\n\n"
+            f"My AI Educator just generated a grammar breakdown challenge concept for us regarding:\n"
+            f"👉 \"{last_user_query}\"\n\n"
+            f"Tap the link to join our active tracking lobby room:\n"
+            f"🔗 https://streamlit.app"
+        )
+        # Using target="_top" and whatsapp:// protocol forces Chrome Mobile to hand off the action to the native OS app wrapper
+        st.markdown(f'<a href="whatsapp://send?text={urllib.parse.quote(mock_ai_challenge)}" target="_top" class="unblocked-wa-link">🚀 Throw This AI Concept Challenge to Friend</a>', unsafe_allow_html=True)
+            
