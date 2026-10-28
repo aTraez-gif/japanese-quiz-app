@@ -349,7 +349,7 @@ if st.session_state.current_page_view == "ARENA":
             st.line_chart(my_history_df, x="Timestamp", y="Cumulative_Correct", color="#1e90ff")
         else:
             st.info("Complete your first quiz evaluation run inside the Quiz Room to map your timeline trajectory graph.")
-              elif st.session_state.arena_sub_tab == "QUIZ":
+        elif st.session_state.arena_sub_tab == "QUIZ":
         st.subheader("⚔️ Active Arena Quiz Room")
         if "quiz_index" not in st.session_state:
             st.session_state.quiz_index = 0
