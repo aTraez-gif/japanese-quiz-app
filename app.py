@@ -117,7 +117,6 @@ GLOBAL_COMMUNITY_URL = "https://chat.whatsapp.com/I3ajCTSGOgo2UZpH5GnY2x"
 # --- HUMAN-CENTRIC CONTEXTUAL JAPANESE QUIZ SYSTEM ---
 @st.cache_data
 def get_automated_question_bank():
-    """Generates an expanding deck of organic, real-life conversation scenarios instead of system codes."""
     base_scenarios = [
         {
             "Question": "Your Japanese coworker looks stressed about an upcoming presentation. You want to smoothly reassure them that everything is fine. What do you say?",
@@ -316,6 +315,7 @@ else:
 
 st.markdown(f'<div class="bulletin-box">📜 <strong>Guild Update:</strong> {bulletin_text}</div>', unsafe_allow_html=True)
 st.write("")
+
 # --- CORE APPLICATION DECK DISPATCHER ---
 if st.session_state.current_page_view == "ARENA":
     sub_col1, sub_col2, sub_col3 = st.columns(3)
@@ -348,7 +348,6 @@ if st.session_state.current_page_view == "ARENA":
             st.line_chart(my_history_df, x="Timestamp", y="Cumulative_Correct", color="#1e90ff")
         else:
             st.info("Complete your first quiz evaluation run inside the Quiz Room to map your timeline trajectory graph.")
-
     elif st.session_state.arena_sub_tab == "QUIZ":
         st.subheader("⚔️ Active Arena Quiz Room")
         if "quiz_index" not in st.session_state:
@@ -421,12 +420,28 @@ if st.session_state.current_page_view == "ARENA":
                 st.dataframe(leaderboard.sort_values(by="Total_Correct", ascending=False), use_container_width=True, hide_index=True)
             else:
                 st.info("No recorded scores logged inside this group area yet.")
+elif st.session_state.current_page_view == "MYPAGE":
+    st.subheader("🥷 MyPage Account Configuration")
+    uploaded_pic = st.file_uploader("Upload Profile Image Avatar:", type=["png", "jpg", "jpeg"])
+    if uploaded_pic is not None: st.image(uploaded_pic, width=120)
+        
+    st.write(f"👤 Display Name: **{st.session_state.my_name}**")
+    st.write(f"📧 Secure Backup Email: `{st.session_state.my_email}`")
+    st.write(f"🆔 Personal Account Token: `{st.session_state.my_uid}`")
+    st.write(f"🛡️ Synced Lobby Group: **{st.session_state.my_group}**")
+    
+    st.markdown(f'<a href="{GLOBAL_COMMUNITY_URL}" target="_top" class="unblocked-wa-link wa-blue">🤝 Join Global Language Hub Community</a>', unsafe_allow_html=True)
+    if st.button("🔄 Clear Device Cache (Logout)"):
+        clear_cached_session()
+        st.session_state.user_authenticated = False
+        st.session_state.current_page_view = "ARENA"
+        st.rerun()
+
 elif st.session_state.current_page_view == "AI_AGENT":
     st.subheader("🤖 AI Sensei Assistant Educator")
     
     col_esc_a, col_esc_b = st.columns(2)
-    with col_esc_a: 
-        st.caption("Ask queries to instantly generate challenge cards.")
+    with col_esc_a: st.caption("Ask queries to instantly generate challenge cards.")
     with col_esc_b:
         if st.button("❌ Close Hub", key="ai_escape_exit_btn"):
             st.session_state.current_page_view = "ARENA"
