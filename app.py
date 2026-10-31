@@ -15,6 +15,7 @@ st.markdown("""
     /* Force high-visibility text colors on all mobile screens and operating themes */
     html, body, [data-testid="stSidebar"], [data-testid="stSidebar"] * {
         color: #ffffff !important;
+        
         background-color: #0f0f12 !important;
     }
     p, span, label, h1, h2, h3, h4, li, div {
