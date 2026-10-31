@@ -214,34 +214,38 @@ st.subheader("👋 Welcome to the Guild Arena")
 user_input_name = st.text_input("Profile Display Name / Nickname:", placeholder="e.g., Alex")
 user_input_email = st.text_input("Your Secure Email Address (For Account Validation):", placeholder="name@example.com")
 st.markdown("---")
-with st.expander("➕ Option 1: Invite Friends & Create a Closed Group"):
-if st.button("Generate Group Access Token", key="create_group_btn"):
-if user_input_name.strip() and "@" in user_input_email:
-new_group_code = f"G-{random.randint(1000, 9999)}"
-uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
-save_cached_session(user_input_name, user_input_email, uid, new_group_code)
-st.session_state.my_name = user_input_name
-st.session_state.my_email = user_input_email
-st.session_state.my_uid = uid
-st.session_state.my_group = new_group_code
-st.session_state.user_authenticated = True
-try:
-requests.post("web3forms.com", data={
-"access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
-"email": user_input_email,
-"subject": "Nihongo Guild - Registration Validation Completed",
-"message": f"Konnichiwa {user_input_name}! Your room code is: {new_group_code}."
-})
-except: pass
-invite_msg = (
-f"🇯🇵 Join my private Japanese Learning Arena! 🥷\n\n"
-f"Open our app link, choose 'Join Existing Group', and enter our code:\n"
-f"👉 Group Code: {new_group_code}"
-)
-st.markdown(f'📲 Invite Friends & Go To App', unsafe_allow_html=True)
-st.rerun()
-else:
-st.error("Please fill in fields correctly and include '@' in your email!")
+    with st.expander("➕ Option 1: Invite Friends & Create a Closed Group"):
+        if st.button("Generate Group Access Token", key="create_group_btn"):
+            if user_input_name.strip() and "@" in user_input_email:
+                new_group_code = f"G-{random.randint(1000, 9999)}"
+                uid = "UID-16728" if user_input_name.strip().lower() == "admin" else f"UID-{random.randint(10000, 99999)}"
+                
+                save_cached_session(user_input_name, user_input_email, uid, new_group_code)
+                st.session_state.my_name = user_input_name
+                st.session_state.my_email = user_input_email
+                st.session_state.my_uid = uid
+                st.session_state.my_group = new_group_code
+                st.session_state.user_authenticated = True
+                
+                try:
+                    requests.post("https://web3forms.com", data={
+                        "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
+                        "email": user_input_email,
+                        "subject": "Nihongo Guild - Registration Validation Completed",
+                        "message": f"Konnichiwa {user_input_name}! Your room code is: {new_group_code}."
+                    })
+                except:
+                    pass
+                
+                invite_msg = (
+                    f"🇯🇵 *Join my private Japanese Learning Arena!* 🥷\n\n"
+                    f"Open our app link, choose 'Join Existing Group', and enter our code:\n"
+                    f"👉 *Group Code:* {new_group_code}"
+                )
+                st.markdown(f'<a href="whatsapp://send?text={urllib.parse.quote(invite_msg)}" target="_top" class="unblocked-wa-link">📲 Invite Friends & Go To App</a>', unsafe_allow_html=True)
+                st.rerun()
+            else:
+                st.error("Please fill in fields correctly and include '@' in your email!")
 with st.expander("🤝 Option 2: Join an Existing Closed Group"):
 input_code = st.text_input("Enter Group Code (e.g., G-1234):", key="join_code_field")
 if st.button("Connect Ledger to Group", key="join_group_btn"):
