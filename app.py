@@ -15,7 +15,7 @@ st.markdown("""
     /* Force high-visibility text colors on all mobile screens and operating themes */
     html, body, [data-testid="stSidebar"], [data-testid="stSidebar"] * {
         color: #ffffff !important;
-        
+
         background-color: #0f0f12 !important;
     }
     p, span, label, h1, h2, h3, h4, li, div {
@@ -270,7 +270,7 @@ else:
 st.error("Please enter your name and email first!")
 st.stop()
 
---- 👑 PERMANENT UNIVERSAL SIDE-BY-SIDE MOBILE HEADER NAVBAR 👑 ---
+# --- 👑 PERMANENT UNIVERSAL SIDE-BY-SIDE MOBILE HEADER NAVBAR 👑 ---
 
 st.markdown("", unsafe_allow_html=True)
 nh_col1, nh_col2, nh_col3 = st.columns(3)
