@@ -186,14 +186,16 @@ if "user_authenticated" not in st.session_state:
         st.session_state.my_uid = cached["uid"]
         st.session_state.my_group = cached["group"]
         
-        try:
-            requests.post("https://web3forms.com", data={
-                "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
-                "email": cached["email"],
-                "subject": "Nihongo Guild - Security Access Log Update",
-                "message": f"Konnichiwa! Your profile ({cached['name']}) has successfully auto-logged into your persistent session grid."
-            })
-except: pass
+                        try:
+                    requests.post("https://web3forms.com", data={
+                        "access_key": "4c45a769-cf77-4b7b-9fe3-69024f2b963b",
+                        "email": user_input_email,
+                        "subject": "Nihongo Guild - Registration Validation Completed",
+                        "message": f"Konnichiwa {user_input_name}! Your room code is: {new_group_code}."
+                    })
+                except:
+                    pass
+
 else:
 st.session_state.user_authenticated = False
 st.session_state.my_name = ""
